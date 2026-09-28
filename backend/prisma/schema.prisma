@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  PARENT
+  TEACHER
+  ADMIN
+}
+
+enum CodeType {
+  STUDENT_CLASS
+  CHILD_FAMILY
+  GUEST
+}
+
+enum CodeStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  username     String
+  passwordHash String
+  salt         String
+  role         UserRole    @default(PARENT)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Relations
+  classrooms   Classroom[] @relation("TeacherClassrooms")
+  createdCodes InviteCode[] @relation("CreatedCodes")
+
+  @@map("users")
+}
+
+model Classroom {
+  id          String       @id @default(uuid())
+  name        String       // e.g. "Klasse 4a" (pseudonymized, no student names)
+  teacherId   String
+  teacher     User         @relation("TeacherClassrooms", fields: [teacherId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  codes       InviteCode[]
+
+  @@map("classrooms")
+}
+
+model InviteCode {
+  id          String      @id @default(uuid())
+  code        String      @unique // e.g. "SAFE-4A-89"
+  type        CodeType    @default(STUDENT_CLASS)
+  status      CodeStatus  @default(ACTIVE)
+  
+  // Optional associations (pseudonymized)
+  classroomId String?
+  classroom   Classroom?  @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  
+  creatorId   String?
+  creator     User?       @relation("CreatedCodes", fields: [creatorId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime    @default(now())
+  expiresAt   DateTime?
+
+  @@map("invite_codes")
+}
+
+model LearningModule {
+  id          String      @id @default(uuid())
+  slug        String      @unique // e.g. "phishing-simulator", "fake-news-detector"
+  title       String
+  description String
+  isActive    Boolean     @default(true)
+  version     String      @default("1.0.0")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("learning_modules")
+}

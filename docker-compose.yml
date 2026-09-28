@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kidssafe-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kidssafe
+      POSTGRES_PASSWORD: kidssafe_secret
+      POSTGRES_DB: kidssafe_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kidssafe -d kidssafe_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kidssafe-backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://kidssafe:kidssafe_secret@postgres:5432/kidssafe_db?schema=public
+      CORS_ORIGIN: http://localhost:3000
+      JWT_SECRET: kidssafe_dev_super_secret_jwt_key_change_in_production_12345
+      PASSWORD_PEPPER: kidssafe_dev_pepper_secret_98765
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kidssafe-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+    driver: local
