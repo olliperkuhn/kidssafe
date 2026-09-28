@@ -11,7 +11,8 @@ import { theme } from '../../styles/theme';
 import { ClassroomDTO, InviteCodeDTO, LabelScheme, UserDTO } from '../../types';
 import { listTeacherClassrooms, createClassroom, generateClassroomCodes } from '../../services/codeApi';
 import { useClassroomTracking } from '../../hooks/useClassroomTracking';
-import { Plus, School, AlertCircle } from 'lucide-react';
+import { Plus, School, AlertCircle, Users, Bot } from 'lucide-react';
+import { AiManagementView } from '../organisms/AiManagementView';
 
 export interface TeacherDashboardPageProps {
   user: UserDTO;
@@ -24,6 +25,7 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
   token,
   onLogout,
 }) => {
+  const [activeTab, setActiveTab] = useState<'classrooms' | 'ai-pipeline'>('classrooms');
   const [classrooms, setClassrooms] = useState<ClassroomDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,58 +136,111 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
 
   return (
     <BaseLayout adultUser={user} onLogoutAdult={onLogout}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.xl, flexWrap: 'wrap', gap: theme.spacing.md }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg, flexWrap: 'wrap', gap: theme.spacing.md }}>
         <div>
-          <h1 style={{ fontSize: theme.typography.fontSize.xxl, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary }}>
+          <h1 style={{ fontSize: theme.typography.fontSize.xxl, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary, margin: 0 }}>
             Lehrkräfte-Dashboard
           </h1>
-          <p style={{ fontSize: theme.typography.fontSize.sm, color: theme.colors.text.secondary }}>
-            Verwalte deine Klassen und generiere pseudonymisierte Einladungscodes für deine Schüler:innen.
+          <p style={{ fontSize: theme.typography.fontSize.sm, color: theme.colors.text.secondary, margin: `${theme.spacing.xs} 0 0` }}>
+            Verwalte deine Klassen, generiere Einladungscodes und steuere die KI-Lernmodelle.
           </p>
         </div>
 
-        <Button variant="primary" size="md" onClick={() => setIsNewClassModalOpen(true)}>
-          <Plus size={18} style={{ marginRight: theme.spacing.xs }} />
-          Neue Klasse anlegen
-        </Button>
+        {activeTab === 'classrooms' && (
+          <Button variant="primary" size="md" onClick={() => setIsNewClassModalOpen(true)}>
+            <Plus size={18} style={{ marginRight: theme.spacing.xs }} />
+            Neue Klasse anlegen
+          </Button>
+        )}
       </div>
 
-      {error && (
-        <div style={{ backgroundColor: theme.colors.danger.light, color: theme.colors.danger.default, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, marginBottom: theme.spacing.lg, display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-          <AlertCircle size={20} />
-          <span>{error}</span>
-        </div>
-      )}
+      {/* Tab Switcher */}
+      <div style={{ display: 'flex', gap: theme.spacing.sm, borderBottom: `1px solid ${theme.colors.border}`, marginBottom: theme.spacing.xl }}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('classrooms')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing.xs,
+            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+            border: 'none',
+            background: 'none',
+            cursor: 'pointer',
+            fontSize: theme.typography.fontSize.sm,
+            fontWeight: activeTab === 'classrooms' ? theme.typography.fontWeight.bold : theme.typography.fontWeight.medium,
+            color: activeTab === 'classrooms' ? theme.colors.primary.default : theme.colors.text.secondary,
+            borderBottom: activeTab === 'classrooms' ? `2px solid ${theme.colors.primary.default}` : '2px solid transparent',
+            marginBottom: '-1px',
+          }}
+        >
+          <Users size={16} /> Klassen & Schülercodes
+        </button>
 
-      {isLoading ? (
-        <div style={{ textAlign: 'center', padding: theme.spacing.xxl, color: theme.colors.text.muted }}>
-          Lade Klassen...
-        </div>
-      ) : classrooms.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: theme.spacing.xxl, backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, border: `1px solid ${theme.colors.border}` }}>
-          <School size={48} color={theme.colors.text.muted} style={{ marginBottom: theme.spacing.md }} />
-          <h3 style={{ fontSize: theme.typography.fontSize.lg, color: theme.colors.text.primary }}>Noch keine Klassen angelegt</h3>
-          <p style={{ fontSize: theme.typography.fontSize.sm, color: theme.colors.text.secondary, margin: `${theme.spacing.xs} 0 ${theme.spacing.lg}` }}>
-            Lege deine erste Schulklasse an, um Code-Kontingente für den Unterricht zu erzeugen.
-          </p>
-          <Button variant="primary" onClick={() => setIsNewClassModalOpen(true)}>
-            Erste Klasse anlegen
-          </Button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('ai-pipeline')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing.xs,
+            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+            border: 'none',
+            background: 'none',
+            cursor: 'pointer',
+            fontSize: theme.typography.fontSize.sm,
+            fontWeight: activeTab === 'ai-pipeline' ? theme.typography.fontWeight.bold : theme.typography.fontWeight.medium,
+            color: activeTab === 'ai-pipeline' ? theme.colors.primary.default : theme.colors.text.secondary,
+            borderBottom: activeTab === 'ai-pipeline' ? `2px solid ${theme.colors.primary.default}` : '2px solid transparent',
+            marginBottom: '-1px',
+          }}
+        >
+          <Bot size={16} /> KI-Pipeline & Sprachmodelle
+        </button>
+      </div>
+
+      {activeTab === 'ai-pipeline' ? (
+        <AiManagementView token={token} />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: theme.spacing.lg }}>
-          {classrooms.map((c) => (
-            <ClassroomCard
-              key={c.id}
-              classroom={c}
-              onGenerateCodes={(target) => setGeneratorClass(target)}
-              onPrintCodes={(target) => {
-                setPrintClass(target);
-              }}
-              onOpenLiveMonitor={(target) => setActiveTrackingClass(target)}
-            />
-          ))}
-        </div>
+        <>
+          {error && (
+            <div style={{ backgroundColor: theme.colors.danger.light, color: theme.colors.danger.default, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, marginBottom: theme.spacing.lg, display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+              <AlertCircle size={20} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: theme.spacing.xxl, color: theme.colors.text.muted }}>
+              Lade Klassen...
+            </div>
+          ) : classrooms.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: theme.spacing.xxl, backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, border: `1px solid ${theme.colors.border}` }}>
+              <School size={48} color={theme.colors.text.muted} style={{ marginBottom: theme.spacing.md }} />
+              <h3 style={{ fontSize: theme.typography.fontSize.lg, color: theme.colors.text.primary }}>Noch keine Klassen angelegt</h3>
+              <p style={{ fontSize: theme.typography.fontSize.sm, color: theme.colors.text.secondary, margin: `${theme.spacing.xs} 0 ${theme.spacing.lg}` }}>
+                Lege deine erste Schulklasse an, um Code-Kontingente für den Unterricht zu erzeugen.
+              </p>
+              <Button variant="primary" onClick={() => setIsNewClassModalOpen(true)}>
+                Erste Klasse anlegen
+              </Button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: theme.spacing.lg }}>
+              {classrooms.map((c) => (
+                <ClassroomCard
+                  key={c.id}
+                  classroom={c}
+                  onGenerateCodes={(target) => setGeneratorClass(target)}
+                  onPrintCodes={(target) => {
+                    setPrintClass(target);
+                  }}
+                  onOpenLiveMonitor={(target) => setActiveTrackingClass(target)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Modal: Neue Klasse */}

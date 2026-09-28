@@ -139,3 +139,5 @@ export interface PhishingReviewDTO {
   goldenRule: string;
   leoSummary: string;
 }
+
+export * from './aiAdmin';
