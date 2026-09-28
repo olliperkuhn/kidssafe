@@ -1,5 +1,6 @@
 import { AIProvider, LLMGenerateOptions, ProviderHealthStatus } from './aiProvider.interface';
 import { defaultAIConfig } from '../../../config/ai.config';
+import { logger } from '../../../utils/logger';
 
 interface GeminiPart {
   text?: string;
@@ -9,6 +10,7 @@ interface GeminiCandidate {
   content?: {
     parts?: GeminiPart[];
   };
+  finishReason?: string;
 }
 
 interface GeminiResponse {
@@ -38,9 +40,10 @@ export class GeminiProvider implements AIProvider {
     this.timeoutMs = timeoutMs;
   }
 
-  public updateConfig(apiKey?: string, model?: string): void {
+  public updateConfig(apiKey?: string, model?: string, timeoutMs?: number): void {
     if (apiKey !== undefined) this.apiKey = apiKey;
     if (model) this.model = model;
+    if (timeoutMs !== undefined) this.timeoutMs = timeoutMs;
   }
 
   public async isAvailable(): Promise<boolean> {
@@ -120,6 +123,12 @@ export class GeminiProvider implements AIProvider {
           maxOutputTokens: defaultAIConfig.guardrails.maxTokens,
           responseMimeType: options.responseJson ? 'application/json' : 'text/plain',
         },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+        ],
       };
 
       const res = await fetch(url, {
@@ -130,12 +139,21 @@ export class GeminiProvider implements AIProvider {
       });
 
       if (!res.ok) {
+        const errorText = await res.text().catch(() => '');
+        logger.warn(`[GeminiProvider] API-Fehler HTTP ${res.status}: ${errorText}`);
         return null;
       }
 
       const data = (await res.json()) as GeminiResponse;
-      return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
-    } catch {
+      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+      if (!responseText) {
+        logger.warn(
+          `[GeminiProvider] Keine Text-Kandidaten erhalten (FinishReason: ${data.candidates?.[0]?.finishReason || 'unbekannt'})`
+        );
+      }
+      return responseText;
+    } catch (err) {
+      logger.warn(`[GeminiProvider] Ausführung fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
       return null;
     }
   }

@@ -12,6 +12,7 @@ import {
 } from '../../config/ai.config';
 import { AIPromptBuilder, AttackerTurnDTO } from './aiPromptBuilder';
 import { PhishingReviewDTO, ChatStatus } from '../../types/dto/phishing.dto';
+import { logger } from '../../utils/logger';
 
 export interface UpdateAIConfigInput {
   activeProvider?: AIProviderType;
@@ -52,12 +53,20 @@ export class AIService {
     if (updates.activeProvider) this.config.activeProvider = updates.activeProvider;
     if (updates.fallbackOrder) this.config.fallbackOrder = updates.fallbackOrder;
     if (updates.temperature !== undefined) this.config.temperature = updates.temperature;
-    if (updates.timeoutMs !== undefined) this.config.timeoutMs = updates.timeoutMs;
+    if (updates.timeoutMs !== undefined) {
+      this.config.timeoutMs = updates.timeoutMs;
+      (this.providers.get('gemini') as GeminiProvider)?.updateConfig(
+        undefined,
+        undefined,
+        updates.timeoutMs
+      );
+    }
     if (updates.gemini) {
       this.config.gemini = { ...this.config.gemini, ...updates.gemini };
       (this.providers.get('gemini') as GeminiProvider)?.updateConfig(
         updates.gemini.apiKey,
-        updates.gemini.model
+        updates.gemini.model,
+        this.config.timeoutMs
       );
     }
     if (updates.ollama) {
@@ -108,8 +117,10 @@ export class AIService {
         if (result && result.trim().length > 0) {
           return { text: result, providerUsed: provider.id };
         }
-      } catch {
-        // Bei Fehler oder Timeout versuchen wir den nächsten Provider in der Kaskade
+      } catch (err) {
+        logger.warn(
+          `[AIService] Provider ${providerId} Ausführungsfehler: ${err instanceof Error ? err.message : String(err)}`
+        );
         continue;
       }
     }

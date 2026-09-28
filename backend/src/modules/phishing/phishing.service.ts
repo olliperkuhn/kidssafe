@@ -8,6 +8,7 @@ import {
 } from '../../types/dto/phishing.dto';
 import { PHISHING_SCENARIOS, PhishingScenarioTemplate } from './promptLibrary';
 import { aiService } from '../../services/ai/ai.service';
+import { logger } from '../../utils/logger';
 
 interface ActivePhishingChat {
   chatId: string;
@@ -214,8 +215,8 @@ export class PhishingService {
             providerUsed: aiRes.providerUsed,
           };
         }
-      } catch {
-        // Fallback to template library
+      } catch (err) {
+        logger.warn(`[PhishingService] Leo-Review via KI fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
@@ -255,9 +256,7 @@ export class PhishingService {
   }
 
   private resolveBranchKey(attitude?: string): 'onVulnerable' | 'onHesitant' | 'onCautious' {
-    if (attitude === 'VULNERABLE') return 'onVulnerable';
-    if (attitude === 'HESITANT') return 'onHesitant';
-    return 'onCautious';
+    return attitude === 'VULNERABLE' ? 'onVulnerable' : attitude === 'HESITANT' ? 'onHesitant' : 'onCautious';
   }
 
   private getTemplate(index: number): PhishingScenarioTemplate {
@@ -284,12 +283,9 @@ export class PhishingService {
   }
 
   private cleanExpiredSessions(): void {
-    const ONE_HOUR = 3600 * 1000;
     const now = Date.now();
     for (const [key, value] of this.activeSessions.entries()) {
-      if (now - value.createdAt > ONE_HOUR) {
-        this.activeSessions.delete(key);
-      }
+      if (now - value.createdAt > 3600 * 1000) this.activeSessions.delete(key);
     }
   }
 }

@@ -36,7 +36,7 @@ export const defaultAIConfig: AIConfig = {
   activeProvider: (env.AI_DEFAULT_PROVIDER as AIProviderType) || 'mock',
   fallbackOrder: ['gemini', 'ollama', 'mock'],
   temperature: 0.7,
-  timeoutMs: 8000,
+  timeoutMs: 25000,
   gemini: {
     apiKey: env.GEMINI_API_KEY || process.env.GEMINI_API_KEY,
     model: 'gemini-1.5-flash',

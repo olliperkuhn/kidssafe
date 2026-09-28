@@ -33,13 +33,15 @@ export class MockProvider implements AIProvider {
         signals: [
           {
             quote: 'Gib schnell deinen Code ein!',
-            category: 'Künstlicher Zeitdruck',
+            type: 'Künstlicher Zeitdruck',
             explanation: 'Betrüger setzen dich oft unter Zeitdruck, damit du unüberlegt handelst.',
+            protectionTip: 'Nimm dir Zeit und frage im Zweifel einen Erwachsenen.',
           },
           {
             quote: 'Kostenlose Robux & Geschenke',
-            category: 'Falsche Versprechen',
+            type: 'Köder-Angebot',
             explanation: 'Niemand verschenkt im Internet einfach so wertvolles Spielguthaben oder Geschenke.',
+            protectionTip: 'Misstraue Angeboten, die zu schön klingen, um wahr zu sein.',
           },
         ],
         goldenRule: 'Passwörter und Sicherheitscodes sind wie deine Zahnbürste – sie gehören nur dir!',

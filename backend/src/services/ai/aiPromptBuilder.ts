@@ -64,22 +64,27 @@ Generiere jetzt die nächste Angreifernachricht und genau 4 neue Schüler-Auswah
     history: Array<{ sender: string; text: string }>
   ): { systemPrompt: string; userPrompt: string } {
     const systemPrompt = `Du bist "Löwe Leo", der freundliche, kluge Cyber-Detektiv für Kinder der 4. Klasse.
-Deine Aufgabe ist es, den absolvierten Phishing-Chat fehlerfreundlich und ermutigend auszuwerten.
+Deine Aufgabe ist es, den absolvierten Phishing-Chat fehlerfreundlich, kindgerecht und ermutigend auszuwerten.
 Egal ob das Kind in die Falle getappt ist oder den Angriff abgewehrt hat: Du lobst den Lerneffekt und erklärst die Tricks.
 
-Antworte zwingend als valides JSON-Objekt ohne weiteren Text:
+WICHTIG FÜR DIE ANALYSE:
+1. Untersuche GENAU die tatsächlichen Nachrichten des Angreifers im untenstehenden Chatverlauf!
+2. Zitiere im Feld "quote" echte Sätze aus den Angreifernachrichten dieses Chats als enttarnte Warnsignale.
+3. Beziehe dich in deiner Zusammenfassung ("leoSummary") direkt auf den Spielverlauf.
+
+Antworte zwingend als valides JSON-Objekt im folgenden Format:
 {
   "scenarioTitle": "${scenarioTitle}",
   "signals": [
     {
-      "quote": "Zitiertes Warnsignal aus der Angreifernachricht",
-      "type": "Kategorie (z. B. Künstlicher Zeitdruck, Schmeichelei, Passwort-Falle)",
+      "quote": "Echtes Zitat aus den Nachrichten des Angreifers im Chat",
+      "type": "Kategorie (z. B. Künstlicher Zeitdruck, Schmeichelei, Passwort-Falle, Köder)",
       "explanation": "Kindgerechte Erklärung, warum das verdächtig ist",
-      "protectionTip": "Konkreter Tipp, was man tun sollte"
+      "protectionTip": "Konkreter Tipp, was man stattdessen tun sollte"
     }
   ],
   "goldenRule": "Ein prägnanter, merkfähiger Leitsatz für Kinder",
-  "leoSummary": "Ermutigende Zusammenfassung aus Sicht von Löwe Leo"
+  "leoSummary": "Ermutigende, persönliche Zusammenfassung aus Sicht von Löwe Leo über diesen Chat"
 }`;
 
     const historyFormatted = history
@@ -87,10 +92,12 @@ Antworte zwingend als valides JSON-Objekt ohne weiteren Text:
       .join('\n');
 
     const userPrompt = `Ausgang der Simulation: ${outcome === 'DEFENDED' ? 'Erfolgreich abgewehrt 🛡️' : 'In die Falle getappt 🚨'}
-Chatverlauf:
+Szenario-Thema: ${scenarioTitle}
+
+Chatverlauf zwischen Angreifer und Schüler:
 ${historyFormatted}
 
-Erstelle die detektivische Nachbesprechung als JSON.`;
+Analysiere genau diesen Chatverlauf und erstelle jetzt die detektivische Nachbesprechung als JSON.`;
 
     return { systemPrompt, userPrompt };
   }
@@ -101,13 +108,19 @@ Erstelle die detektivische Nachbesprechung als JSON.`;
   public static parseAttackerResponse(raw: string): AttackerTurnDTO | null {
     try {
       const cleanJson = this.extractJsonString(raw);
-      const parsed = JSON.parse(cleanJson) as {
-        attackerMessage?: string;
-        escalationReached?: boolean;
-        options?: Array<{ id?: string; text?: string; attitude?: string }>;
-      };
+      const parsed = JSON.parse(cleanJson) as Record<string, unknown>;
 
-      if (!parsed.attackerMessage || !Array.isArray(parsed.options) || parsed.options.length < 2) {
+      const attackerMessage =
+        typeof parsed.attackerMessage === 'string' && parsed.attackerMessage.trim().length > 0
+          ? parsed.attackerMessage.trim()
+          : typeof parsed.attacker_message === 'string' && parsed.attacker_message.trim().length > 0
+          ? parsed.attacker_message.trim()
+          : typeof parsed.message === 'string' && parsed.message.trim().length > 0
+          ? parsed.message.trim()
+          : null;
+
+      const rawOptions = Array.isArray(parsed.options) ? parsed.options : null;
+      if (!attackerMessage || !rawOptions || rawOptions.length < 2) {
         return null;
       }
 
@@ -116,20 +129,20 @@ Erstelle die detektivische Nachbesprechung als JSON.`;
       const isAttitude = (val: unknown): val is ValidAttitude =>
         typeof val === 'string' && (validAttitudes as readonly string[]).includes(val);
 
-      const options: PhishingOptionDTO[] = parsed.options.map((opt, idx) => {
+      const options: PhishingOptionDTO[] = rawOptions.map((item, idx) => {
+        const opt = (typeof item === 'object' && item !== null ? item : {}) as Record<string, unknown>;
         const attitude: ValidAttitude = isAttitude(opt.attitude)
           ? opt.attitude
           : validAttitudes[idx % validAttitudes.length]!;
-        return {
-          id: opt.id || `ai-opt-${idx + 1}`,
-          text: opt.text || `Option ${idx + 1}`,
-          attitude,
-        };
+        const text = typeof opt.text === 'string' && opt.text.trim().length > 0 ? opt.text.trim() : `Option ${idx + 1}`;
+        const id = typeof opt.id === 'string' && opt.id.trim().length > 0 ? opt.id.trim() : `ai-opt-${idx + 1}`;
+
+        return { id, text, attitude };
       });
 
       return {
-        attackerMessage: parsed.attackerMessage,
-        escalationReached: Boolean(parsed.escalationReached),
+        attackerMessage,
+        escalationReached: Boolean(parsed.escalationReached || parsed.escalation_reached),
         options,
       };
     } catch {
@@ -147,24 +160,96 @@ Erstelle die detektivische Nachbesprechung als JSON.`;
   ): PhishingReviewDTO | null {
     try {
       const cleanJson = this.extractJsonString(raw);
-      const parsed = JSON.parse(cleanJson) as {
-        scenarioTitle?: string;
-        signals?: WarningSignalReviewDTO[];
-        goldenRule?: string;
-        leoSummary?: string;
-      };
+      const parsed = JSON.parse(cleanJson) as Record<string, unknown>;
 
-      if (!parsed.goldenRule || !parsed.leoSummary) {
-        return null;
+      const goldenRule =
+        typeof parsed.goldenRule === 'string' && parsed.goldenRule.trim().length > 0
+          ? parsed.goldenRule.trim()
+          : typeof parsed.golden_rule === 'string' && parsed.golden_rule.trim().length > 0
+          ? parsed.golden_rule.trim()
+          : typeof parsed.rule === 'string' && parsed.rule.trim().length > 0
+          ? parsed.rule.trim()
+          : 'Passwörter, Codes und persönliche Daten niemals im Chat weitergeben!';
+
+      const leoSummary =
+        typeof parsed.leoSummary === 'string' && parsed.leoSummary.trim().length > 0
+          ? parsed.leoSummary.trim()
+          : typeof parsed.leo_summary === 'string' && parsed.leo_summary.trim().length > 0
+          ? parsed.leo_summary.trim()
+          : typeof parsed.summary === 'string' && parsed.summary.trim().length > 0
+          ? parsed.summary.trim()
+          : 'Löwe Leo sagt: Großartige Detektivarbeit! Bleib immer wachsam bei verdächtigen Nachrichten.';
+
+      const scenarioTitle =
+        typeof parsed.scenarioTitle === 'string' && parsed.scenarioTitle.trim().length > 0
+          ? parsed.scenarioTitle.trim()
+          : typeof parsed.scenario_title === 'string' && parsed.scenario_title.trim().length > 0
+          ? parsed.scenario_title.trim()
+          : typeof parsed.title === 'string' && parsed.title.trim().length > 0
+          ? parsed.title.trim()
+          : 'Phishing-Detektiv Fall';
+
+      const rawSignals = Array.isArray(parsed.signals)
+        ? parsed.signals
+        : Array.isArray(parsed.warningSignals)
+        ? parsed.warningSignals
+        : Array.isArray(parsed.warning_signals)
+        ? parsed.warning_signals
+        : [];
+
+      const signals: WarningSignalReviewDTO[] = rawSignals.map((item, idx) => {
+        const sig = (typeof item === 'object' && item !== null ? item : {}) as Record<string, unknown>;
+        const quote =
+          typeof sig.quote === 'string' && sig.quote.trim().length > 0
+            ? sig.quote.trim()
+            : typeof sig.zitat === 'string' && sig.zitat.trim().length > 0
+            ? sig.zitat.trim()
+            : `Warnsignal ${idx + 1}`;
+        const type =
+          typeof sig.type === 'string' && sig.type.trim().length > 0
+            ? sig.type.trim()
+            : typeof sig.category === 'string' && sig.category.trim().length > 0
+            ? sig.category.trim()
+            : typeof sig.typ === 'string' && sig.typ.trim().length > 0
+            ? sig.typ.trim()
+            : 'Verdächtige Nachricht';
+        const explanation =
+          typeof sig.explanation === 'string' && sig.explanation.trim().length > 0
+            ? sig.explanation.trim()
+            : typeof sig.erklaerung === 'string' && sig.erklaerung.trim().length > 0
+            ? sig.erklaerung.trim()
+            : 'Der Absender hat versucht, dich mit dieser Nachricht zu manipulieren.';
+        const protectionTip =
+          typeof sig.protectionTip === 'string' && sig.protectionTip.trim().length > 0
+            ? sig.protectionTip.trim()
+            : typeof sig.protection_tip === 'string' && sig.protection_tip.trim().length > 0
+            ? sig.protection_tip.trim()
+            : typeof sig.tip === 'string' && sig.tip.trim().length > 0
+            ? sig.tip.trim()
+            : typeof sig.tipp === 'string' && sig.tipp.trim().length > 0
+            ? sig.tipp.trim()
+            : 'Halte kurz inne und frage im Zweifel immer eine Vertrauensperson.';
+
+        return { quote, type, explanation, protectionTip };
+      });
+
+      // Mindestens ein Signal garantieren, falls das Modell ein leeres Array lieferte
+      if (signals.length === 0) {
+        signals.push({
+          quote: 'Verdächtige Kontaktaufnahme im Chat',
+          type: 'Unerwartete Aufforderung',
+          explanation: 'Fremde versuchen im Internet oft, Vertrauen aufzubauen und Daten zu erfragen.',
+          protectionTip: 'Niemals Passwörter, Login-Links oder Codes teilen.',
+        });
       }
 
       return {
         chatId,
-        scenarioTitle: parsed.scenarioTitle || 'Phishing-Detektiv Fall',
+        scenarioTitle,
         outcome,
-        signals: Array.isArray(parsed.signals) ? parsed.signals : [],
-        goldenRule: parsed.goldenRule,
-        leoSummary: parsed.leoSummary,
+        signals,
+        goldenRule,
+        leoSummary,
       };
     } catch {
       return null;
