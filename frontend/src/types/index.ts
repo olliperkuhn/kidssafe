@@ -122,6 +122,7 @@ export interface PhishingStepResponseDTO {
   messages: ChatMessageDTO[];
   options?: PhishingOptionDTO[];
   statusMessage?: string;
+  providerUsed?: string;
 }
 
 export interface WarningSignalReviewDTO {
@@ -138,6 +139,7 @@ export interface PhishingReviewDTO {
   signals: WarningSignalReviewDTO[];
   goldenRule: string;
   leoSummary: string;
+  providerUsed?: string;
 }
 
 export * from './aiAdmin';

@@ -44,6 +44,7 @@ export const phishingStepResponseSchema = z.object({
   messages: z.array(chatMessageSchema),
   options: z.array(phishingOptionSchema).optional(),
   statusMessage: z.string().optional(),
+  providerUsed: z.string().optional(),
 });
 export type PhishingStepResponseDTO = z.infer<typeof phishingStepResponseSchema>;
 
@@ -68,5 +69,6 @@ export const phishingReviewSchema = z.object({
   signals: z.array(warningSignalReviewSchema),
   goldenRule: z.string(),
   leoSummary: z.string(),
+  providerUsed: z.string().optional(),
 });
 export type PhishingReviewDTO = z.infer<typeof phishingReviewSchema>;

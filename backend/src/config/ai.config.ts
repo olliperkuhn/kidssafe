@@ -46,7 +46,7 @@ export const defaultAIConfig: AIConfig = {
     model: env.OLLAMA_MODEL,
   },
   guardrails: {
-    maxTokens: 512,
+    maxTokens: 2048,
     childSafeLanguage: true,
   },
 };

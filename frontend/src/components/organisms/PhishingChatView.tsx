@@ -39,10 +39,15 @@ export const PhishingChatView: React.FC<PhishingChatViewProps> = ({
           Missions-Zentrale
         </Button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, flexWrap: 'wrap' }}>
           <Badge variant="primary">
             Fall {data.scenarioIndex + 1} von {data.totalScenarios}
           </Badge>
+          {data.providerUsed && data.providerUsed !== 'mock' ? (
+            <Badge variant="success">✨ Live-KI ({data.providerUsed})</Badge>
+          ) : (
+            <Badge variant="neutral">📚 Offline-Modus</Badge>
+          )}
           <span style={{ fontSize: theme.typography.fontSize.sm, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary }}>
             {data.scenarioTitle}
           </span>

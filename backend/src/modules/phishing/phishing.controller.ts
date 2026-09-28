@@ -11,7 +11,7 @@ export class PhishingController {
       const parsed = startPhishingRequestSchema.safeParse(req.body);
       const scenarioCount = parsed.success ? parsed.data.scenarioCount : 3;
 
-      const initialStep = phishingService.startSession(scenarioCount);
+      const initialStep = await phishingService.startSession(scenarioCount);
       res.status(200).json(initialStep);
     } catch (err) {
       next(err);
@@ -26,7 +26,7 @@ export class PhishingController {
         return;
       }
 
-      const nextStep = phishingService.replyToChat(parsed.data.chatId, parsed.data.selectedOptionId);
+      const nextStep = await phishingService.replyToChat(parsed.data.chatId, parsed.data.selectedOptionId);
       res.status(200).json(nextStep);
     } catch (err) {
       next(err);
@@ -41,7 +41,7 @@ export class PhishingController {
         return;
       }
 
-      const step = phishingService.nextScenario(chatId);
+      const step = await phishingService.nextScenario(chatId);
       res.status(200).json(step);
     } catch (err) {
       next(err);

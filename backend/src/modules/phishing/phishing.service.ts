@@ -19,23 +19,25 @@ interface ActivePhishingChat {
   status: ChatStatus;
   messages: ChatMessageDTO[];
   currentOptions: PhishingOptionDTO[];
+  providerUsed?: string;
   createdAt: number;
 }
 
 export class PhishingService {
   private activeSessions = new Map<string, ActivePhishingChat>();
 
-  public startSession(scenarioCount: 3 | 5): PhishingStepResponseDTO {
+  public async startSession(scenarioCount: 3 | 5): Promise<PhishingStepResponseDTO> {
     this.cleanExpiredSessions();
 
     const chatId = randomUUID();
     const scenarioIndex = 0;
     const template = this.getTemplate(scenarioIndex);
+    const firstTurn = await this.initFirstTurn(template);
 
     const initialAttackerMessage: ChatMessageDTO = {
       id: randomUUID(),
       sender: 'ATTACKER',
-      text: template.initialMessage,
+      text: firstTurn.message,
       timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -47,7 +49,8 @@ export class PhishingService {
       step: 1,
       status: 'IN_PROGRESS',
       messages: [initialAttackerMessage],
-      currentOptions: template.initialOptions,
+      currentOptions: firstTurn.options,
+      providerUsed: firstTurn.providerUsed,
       createdAt: Date.now(),
     };
 
@@ -55,7 +58,7 @@ export class PhishingService {
     return this.buildStepResponse(session);
   }
 
-  public replyToChat(chatId: string, selectedOptionId: string): PhishingStepResponseDTO {
+  public async replyToChat(chatId: string, selectedOptionId: string): Promise<PhishingStepResponseDTO> {
     const session = this.activeSessions.get(chatId);
     if (!session) {
       throw new Error('Sitzung nicht gefunden oder abgelaufen');
@@ -94,13 +97,29 @@ export class PhishingService {
       }
 
       session.step = 2;
-      const branchKey =
-        selectedOption.attitude === 'VULNERABLE'
-          ? 'onVulnerable'
-          : selectedOption.attitude === 'HESITANT'
-          ? 'onHesitant'
-          : 'onCautious';
 
+      // 1. Dynamische KI-Generierung versuchen, falls aktiver Provider nicht 'mock' ist
+      if (aiService.getActiveProviderId() !== 'mock') {
+        try {
+          const history = session.messages.map((m) => ({ sender: m.sender, text: m.text }));
+          const aiTurn = await aiService.generateAttackerTurn(session.template.context, history, 2);
+          if (aiTurn?.turn?.attackerMessage && aiTurn.turn.options && aiTurn.turn.options.length >= 2) {
+            session.messages.push({
+              id: randomUUID(),
+              sender: 'ATTACKER',
+              text: aiTurn.turn.attackerMessage,
+              timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+            });
+            session.currentOptions = aiTurn.turn.options;
+            session.providerUsed = aiTurn.providerUsed;
+            return this.buildStepResponse(session);
+          }
+        } catch {
+          // Stiller Fallback auf kuratiertes Template
+        }
+      }
+
+      const branchKey = this.resolveBranchKey(selectedOption.attitude);
       const branch = session.template.branching[branchKey];
       session.messages.push({
         id: randomUUID(),
@@ -109,16 +128,11 @@ export class PhishingService {
         timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
       });
       session.currentOptions = branch.options;
+      session.providerUsed = 'mock';
       return this.buildStepResponse(session);
     }
 
-    const branchKey =
-      session.chosenStep1Attitude === 'VULNERABLE'
-        ? 'onVulnerable'
-        : session.chosenStep1Attitude === 'HESITANT'
-        ? 'onHesitant'
-        : 'onCautious';
-
+    const branchKey = this.resolveBranchKey(session.chosenStep1Attitude);
     const branch = session.template.branching[branchKey];
 
     if (selectedOption.attitude === 'VULNERABLE') {
@@ -147,7 +161,7 @@ export class PhishingService {
     return this.buildStepResponse(session, 'Reißleine gezogen und Angriff abgewehrt! 🛡️');
   }
 
-  public nextScenario(chatId: string): PhishingStepResponseDTO {
+  public async nextScenario(chatId: string): Promise<PhishingStepResponseDTO> {
     const session = this.activeSessions.get(chatId);
     if (!session) {
       throw new Error('Sitzung nicht gefunden oder abgelaufen');
@@ -164,15 +178,18 @@ export class PhishingService {
     session.status = 'IN_PROGRESS';
     session.chosenStep1Attitude = undefined;
 
+    const firstTurn = await this.initFirstTurn(session.template);
+    session.providerUsed = firstTurn.providerUsed;
+
     const initialAttackerMessage: ChatMessageDTO = {
       id: randomUUID(),
       sender: 'ATTACKER',
-      text: session.template.initialMessage,
+      text: firstTurn.message,
       timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
     };
 
     session.messages = [initialAttackerMessage];
-    session.currentOptions = session.template.initialOptions;
+    session.currentOptions = firstTurn.options;
     return this.buildStepResponse(session);
   }
 
@@ -191,8 +208,11 @@ export class PhishingService {
           history,
           chatId
         );
-        if (aiRes?.review) {
-          return aiRes.review;
+        if (aiRes?.review && aiRes.review.signals && aiRes.review.signals.length > 0) {
+          return {
+            ...aiRes.review,
+            providerUsed: aiRes.providerUsed,
+          };
         }
       } catch {
         // Fallback to template library
@@ -206,7 +226,38 @@ export class PhishingService {
       signals: session.template.warningSignals,
       goldenRule: session.template.goldenRule,
       leoSummary: session.template.leoSummary,
+      providerUsed: 'mock',
     };
+  }
+
+  private async initFirstTurn(template: PhishingScenarioTemplate): Promise<{
+    message: string;
+    options: PhishingOptionDTO[];
+    providerUsed: string;
+  }> {
+    let message = template.initialMessage;
+    let options = template.initialOptions;
+    let providerUsed: string = aiService.getActiveProviderId();
+
+    if (aiService.getActiveProviderId() !== 'mock') {
+      try {
+        const aiTurn = await aiService.generateAttackerTurn(template.context, [], 1);
+        if (aiTurn?.turn?.attackerMessage && aiTurn.turn.options && aiTurn.turn.options.length >= 2) {
+          message = aiTurn.turn.attackerMessage;
+          options = aiTurn.turn.options;
+          providerUsed = aiTurn.providerUsed;
+        }
+      } catch {
+        providerUsed = 'mock';
+      }
+    }
+    return { message, options, providerUsed };
+  }
+
+  private resolveBranchKey(attitude?: string): 'onVulnerable' | 'onHesitant' | 'onCautious' {
+    if (attitude === 'VULNERABLE') return 'onVulnerable';
+    if (attitude === 'HESITANT') return 'onHesitant';
+    return 'onCautious';
   }
 
   private getTemplate(index: number): PhishingScenarioTemplate {
@@ -228,6 +279,7 @@ export class PhishingService {
       messages: session.messages,
       options: session.status === 'IN_PROGRESS' ? session.currentOptions : [],
       statusMessage,
+      providerUsed: session.providerUsed || 'mock',
     };
   }
 

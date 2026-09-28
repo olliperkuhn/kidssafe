@@ -4,6 +4,7 @@ import { PhishingReviewDTO } from '../../types';
 import { LeoAvatar } from '../atoms/LeoAvatar';
 import { Button } from '../atoms/Button';
 import { Card } from '../atoms/Card';
+import { Badge } from '../atoms/Badge';
 import { Search, Lightbulb, ArrowRight, Award, CheckCircle } from 'lucide-react';
 
 export interface LeoDetectiveReviewProps {
@@ -26,9 +27,16 @@ export const LeoDetectiveReview: React.FC<LeoDetectiveReviewProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, flexWrap: 'wrap' }}>
           <LeoAvatar mood={isDefended ? 'friendly' : 'detective'} size="lg" />
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, color: isDefended ? theme.colors.success.default : theme.colors.warning.default, fontWeight: theme.typography.fontWeight.bold, fontSize: theme.typography.fontSize.xs }}>
-              <Search size={16} />
-              <span>{isDefended ? 'FALL ABGEWEHRT: DETEKTIV-ANALYSE MIT LÖWE LEO' : 'DETEKTIV-ANALYSE MIT LÖWE LEO'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: theme.spacing.xs }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, color: isDefended ? theme.colors.success.default : theme.colors.warning.default, fontWeight: theme.typography.fontWeight.bold, fontSize: theme.typography.fontSize.xs }}>
+                <Search size={16} />
+                <span>{isDefended ? 'FALL ABGEWEHRT: DETEKTIV-ANALYSE MIT LÖWE LEO' : 'DETEKTIV-ANALYSE MIT LÖWE LEO'}</span>
+              </div>
+              {review.providerUsed && review.providerUsed !== 'mock' ? (
+                <Badge variant="success">✨ Live-KI ({review.providerUsed})</Badge>
+              ) : (
+                <Badge variant="neutral">📚 Offline-Bibliothek</Badge>
+              )}
             </div>
             <h2 style={{ fontSize: theme.typography.fontSize.xl, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary, margin: '2px 0' }}>
               {review.scenarioTitle}
