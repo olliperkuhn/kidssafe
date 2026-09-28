@@ -1,14 +1,29 @@
 import React from 'react';
 import { theme } from '../../styles/theme';
 import { Badge } from '../atoms/Badge';
-import { ShieldCheck } from 'lucide-react';
+import { Button } from '../atoms/Button';
+import { ShieldCheck, LogOut, User } from 'lucide-react';
+import { UserDTO, ChildSessionDTO } from '../../types';
 
 export interface AppHeaderProps {
   systemStatus?: 'ok' | 'degraded' | 'error';
+  adultUser?: UserDTO | null;
+  childSession?: ChildSessionDTO | null;
   onAdminClick?: () => void;
+  onLogoutAdult?: () => void;
+  onLeaveChildSession?: () => void;
+  onBrandClick?: () => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ systemStatus = 'ok', onAdminClick }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({
+  systemStatus = 'ok',
+  adultUser,
+  childSession,
+  onAdminClick,
+  onLogoutAdult,
+  onLeaveChildSession,
+  onBrandClick,
+}) => {
   const headerStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -25,6 +40,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ systemStatus = 'ok', onAdm
     gap: theme.spacing.sm,
     textDecoration: 'none',
     color: theme.colors.text.primary,
+    cursor: 'pointer',
   };
 
   const logoStyles: React.CSSProperties = {
@@ -38,42 +54,25 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ systemStatus = 'ok', onAdm
     color: theme.colors.primary.default,
   };
 
-  const titleStyles: React.CSSProperties = {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.text.primary,
-  };
-
-  const subtitleStyles: React.CSSProperties = {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.text.secondary,
-  };
-
   const rightNavStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing.md,
   };
 
-  const adminLinkStyles: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.primary.default,
-    fontWeight: theme.typography.fontWeight.medium,
-    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-  };
-
   return (
     <header style={headerStyles}>
-      <div style={brandStyles}>
+      <div style={brandStyles} onClick={onBrandClick}>
         <div style={logoStyles}>
           <ShieldCheck size={26} />
         </div>
         <div>
-          <div style={titleStyles}>Kidssafe</div>
-          <div style={subtitleStyles}>IT-Sicherheitskompetenz</div>
+          <div style={{ fontSize: theme.typography.fontSize.xl, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary }}>
+            Kidssafe
+          </div>
+          <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.secondary }}>
+            IT-Sicherheitskompetenz
+          </div>
         </div>
       </div>
 
@@ -81,10 +80,38 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ systemStatus = 'ok', onAdm
         <Badge variant={systemStatus === 'ok' ? 'success' : 'warning'}>
           {systemStatus === 'ok' ? 'System bereit' : 'Offline / Standalone'}
         </Badge>
-        {onAdminClick && (
-          <button style={adminLinkStyles} onClick={onAdminClick}>
+
+        {/* Erwachsener eingeloggt */}
+        {adultUser && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, fontSize: theme.typography.fontSize.sm }}>
+              <User size={16} color={theme.colors.text.secondary} />
+              <span style={{ fontWeight: theme.typography.fontWeight.medium }}>{adultUser.username}</span>
+            </div>
+            <Badge variant="primary">{adultUser.role === 'TEACHER' ? 'Lehrkraft' : 'Eltern'}</Badge>
+            <Button size="sm" variant="outline" onClick={onLogoutAdult}>
+              <LogOut size={14} style={{ marginRight: theme.spacing.xs }} />
+              Abmelden
+            </Button>
+          </div>
+        )}
+
+        {/* Kind eingeloggt */}
+        {!adultUser && childSession && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+            <Badge variant="success">Code: {childSession.code}</Badge>
+            <Button size="sm" variant="outline" onClick={onLeaveChildSession}>
+              <LogOut size={14} style={{ marginRight: theme.spacing.xs }} />
+              Sitzung beenden
+            </Button>
+          </div>
+        )}
+
+        {/* Gast / Nicht eingeloggt */}
+        {!adultUser && !childSession && onAdminClick && (
+          <Button size="sm" variant="outline" onClick={onAdminClick}>
             Lehrkräfte / Eltern
-          </button>
+          </Button>
         )}
       </div>
     </header>

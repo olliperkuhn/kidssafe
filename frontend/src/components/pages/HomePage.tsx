@@ -1,23 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { BaseLayout } from '../templates/BaseLayout';
 import { CodeInputGroup } from '../molecules/CodeInputGroup';
+import { Button } from '../atoms/Button';
 import { theme } from '../../styles/theme';
 import { fetchHealthStatus } from '../../services/apiClient';
-import { Sparkles, KeyRound, School } from 'lucide-react';
+import { Sparkles, KeyRound, School, PlayCircle, AlertCircle } from 'lucide-react';
 
-export const HomePage: React.FC = () => {
+export interface HomePageProps {
+  onCodeSubmit: (code: string) => Promise<void>;
+  onStartGuest: () => Promise<void>;
+  onAdminClick: () => void;
+  isLoading?: boolean;
+  error?: string | null;
+}
+
+export const HomePage: React.FC<HomePageProps> = ({
+  onCodeSubmit,
+  onStartGuest,
+  onAdminClick,
+  isLoading = false,
+  error,
+}) => {
   const [systemStatus, setSystemStatus] = useState<'ok' | 'degraded' | 'error'>('ok');
-  const [enteredCode, setEnteredCode] = useState<string | null>(null);
 
   useEffect(() => {
     fetchHealthStatus()
       .then((data) => setSystemStatus(data.status))
       .catch(() => setSystemStatus('degraded'));
   }, []);
-
-  const handleCodeSubmit = (code: string): void => {
-    setEnteredCode(code);
-  };
 
   const heroStyles: React.CSSProperties = {
     display: 'flex',
@@ -65,18 +75,12 @@ export const HomePage: React.FC = () => {
     flexDirection: 'column',
     alignItems: 'center',
     gap: theme.spacing.md,
-  };
-
-  const confirmationStyles: React.CSSProperties = {
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.success.light,
-    color: theme.colors.success.default,
-    fontWeight: theme.typography.fontWeight.medium,
+    width: '100%',
+    maxWidth: '460px',
   };
 
   return (
-    <BaseLayout systemStatus={systemStatus}>
+    <BaseLayout systemStatus={systemStatus} onAdminClick={onAdminClick}>
       <div style={heroStyles}>
         <div style={badgeStyles}>
           <Sparkles size={16} />
@@ -89,21 +93,33 @@ export const HomePage: React.FC = () => {
           Gib deinen Einladungscode von deiner Lehrkraft oder deinen Eltern ein, um deine Mission zu starten.
         </p>
 
+        {error && (
+          <div style={{ backgroundColor: theme.colors.danger.light, color: theme.colors.danger.default, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, display: 'flex', alignItems: 'center', gap: theme.spacing.sm, maxWidth: '460px', width: '100%' }}>
+            <AlertCircle size={20} />
+            <span>{error}</span>
+          </div>
+        )}
+
         <div style={cardStyles}>
           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, color: theme.colors.text.secondary }}>
             <KeyRound size={20} />
             <span style={{ fontWeight: theme.typography.fontWeight.semibold }}>Code-Eingabe</span>
           </div>
 
-          <CodeInputGroup onSubmit={handleCodeSubmit} />
+          <CodeInputGroup onSubmit={onCodeSubmit} isLoading={isLoading} />
 
-          {enteredCode && (
-            <div style={confirmationStyles}>
-              Code <strong>{enteredCode}</strong> empfangen (Bereit für Meilenstein 2/3)
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm, width: '100%', margin: `${theme.spacing.xs} 0` }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: theme.colors.border }} />
+            <span style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.muted }}>oder</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: theme.colors.border }} />
+          </div>
 
-          <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.muted, display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+          <Button variant="outline" size="md" fullWidth onClick={onStartGuest} disabled={isLoading}>
+            <PlayCircle size={18} style={{ marginRight: theme.spacing.xs }} />
+            Ohne Code als Gast ausprobieren (8h)
+          </Button>
+
+          <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.muted, display: 'flex', alignItems: 'center', gap: theme.spacing.xs, marginTop: theme.spacing.xs }}>
             <School size={14} />
             <span>Vollständig pseudonymisiert: Keine Registrierung & kein Klarname erforderlich</span>
           </div>

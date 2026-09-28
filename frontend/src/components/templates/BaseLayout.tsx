@@ -1,17 +1,28 @@
 import React from 'react';
 import { theme } from '../../styles/theme';
 import { AppHeader } from '../organisms/AppHeader';
+import { UserDTO, ChildSessionDTO } from '../../types';
 
 export interface BaseLayoutProps {
   children: React.ReactNode;
   systemStatus?: 'ok' | 'degraded' | 'error';
+  adultUser?: UserDTO | null;
+  childSession?: ChildSessionDTO | null;
   onAdminClick?: () => void;
+  onLogoutAdult?: () => void;
+  onLeaveChildSession?: () => void;
+  onBrandClick?: () => void;
 }
 
 export const BaseLayout: React.FC<BaseLayoutProps> = ({
   children,
   systemStatus = 'ok',
+  adultUser,
+  childSession,
   onAdminClick,
+  onLogoutAdult,
+  onLeaveChildSession,
+  onBrandClick,
 }) => {
   const containerStyles: React.CSSProperties = {
     minHeight: '100vh',
@@ -41,7 +52,15 @@ export const BaseLayout: React.FC<BaseLayoutProps> = ({
 
   return (
     <div style={containerStyles}>
-      <AppHeader systemStatus={systemStatus} onAdminClick={onAdminClick} />
+      <AppHeader
+        systemStatus={systemStatus}
+        adultUser={adultUser}
+        childSession={childSession}
+        onAdminClick={onAdminClick}
+        onLogoutAdult={onLogoutAdult}
+        onLeaveChildSession={onLeaveChildSession}
+        onBrandClick={onBrandClick}
+      />
       <main style={mainStyles}>{children}</main>
       <footer style={footerStyles}>
         Kidssafe • Open-Source-Infrastruktur für IT-Sicherheitskompetenz • Prototype Fund

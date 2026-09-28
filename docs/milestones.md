@@ -28,12 +28,12 @@
 ---
 
 ## Meilenstein 3: Frontend-Zugänge und Nutzer-Dashboards
-- [ ] **3.1 Login-Portale für Erwachsene:** Klassische Login-/Registrierungs-Ansichten für Eltern und Lehrkräfte.
-- [ ] **3.2 Niederschwelliger Kinder-Zugang:** Schneller Code-Eingabe-Dialog für Kinder ohne klassische Login-Hürden (iPad-optimiert).
-- [ ] **3.3 Schüler-Dashboard:** Zentraler Hub zur Auswahl, Übersicht und Navigation der freigeschalteten Lernmodule.
-- [ ] **3.4 Administrative Dashboards:**
-  - Basis-Dashboard für Eltern (Verknüpfung von Codes).
-  - Basis-Dashboard für Lehrkräfte (Übersicht der Klassen).
+- [x] **3.1 Login-Portale für Erwachsene:** Modal mit Login/Registrierung, Rollenwahl (`TEACHER` vs `PARENT`), Token-Persistenz.
+- [x] **3.2 Niederschwelliger Kinder-Zugang:** iPad-Code-Eingabe, Gastzugang auf Knopfdruck & automatischer Cookie-Wiedereinstieg.
+- [x] **3.3 Schüler-Dashboard:** Missions-Zentrale mit Lernmodulen (Phishing-Simulator, Fake News Detektor) und Session-Status.
+- [x] **3.4 Administrative Dashboards:**
+  - Dashboard für Lehrkräfte: Klassen anlegen, Codes generieren, interaktive Kärtchen-Druckansicht für den Unterricht.
+  - Dashboard für Eltern: Begleitung, Datenschutz und Familientipps.
 
 ---
 
