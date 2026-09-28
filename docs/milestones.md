@@ -1,7 +1,7 @@
 # Entwicklungs-Meilensteine (Software Development Plan)
 
 > **Projekt:** Kidssafe – Modulare Open-Source-Webapp für IT-Sicherheitskompetenz an Schulen  
-> **Status:** Initialisiert / In Vorbereitung
+> **Status:** Konzept- und Architektur-Prototyp zur Bewerbung beim Prototype Fund (BMBF)
 
 ---
 
@@ -62,8 +62,9 @@
 ---
 
 ## Meilenstein 6: KI-Integration und dynamische Konfiguration
-- [ ] **6.1 Lokales Testmodell (Ollama):** Initiale Backend-Anbindung an lokal laufende LLMs via Ollama für isolierte, performante Entwicklungstests.
-- [ ] **6.2 Dynamische Provider-Abstraktion:**
-  - Entkoppelte API-Schnittstelle im Backend zur providerunabhängigen LLM-Kommunikation.
-  - Nahtloser Wechsel zwischen lokalem Ollama und externen/gesponserten Open-Source-LLM-Endpunkten (z. B. Gemma, Qwen) ohne Code-Änderungen an der Kernlogik.
-- [ ] **6.3 Anonymisierte Prompt-Pipeline:** Sicherstellung, dass keinerlei personenbezogene Daten in die KI-Prompts gelangen.
+- [x] **6.1 Lokales Testmodell (Ollama):** Backend-Anbindung an lokal laufende LLMs via Ollama für isolierte, performante Entwicklungstests.
+- [x] **6.2 Dynamische Provider-Abstraktion & Kaskade:**
+  - Entkoppelte Multi-Provider-Schnittstelle (Google Gemini Flash REST, lokales Ollama, deterministischer Fallback).
+  - Nahtlose Failover-Kaskade für 100% Ausfallsicherheit im Unterricht.
+  - Zweistufige Konfiguration (Code-Editor Config + Online-Admin-UI im Lehrer-Dashboard).
+- [x] **6.3 Anonymisierte Prompt-Pipeline:** Didaktisches Prompt-Engineering für Angreifer-Persona und Löwe Leo Detektiv ohne PII.
