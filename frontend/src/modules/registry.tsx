@@ -1,6 +1,7 @@
 import { ModuleManifest } from './types';
 import phishingPlugin from './phishing/index';
-import { Newspaper, KeyRound } from 'lucide-react';
+import fakeNewsPlugin from './fakenews/index';
+import { KeyRound } from 'lucide-react';
 
 export class FrontendModuleRegistry {
   private modules = new Map<string, ModuleManifest>();
@@ -9,17 +10,8 @@ export class FrontendModuleRegistry {
     // 1. Phishing Simulator (aktiv)
     this.registerModule(phishingPlugin);
 
-    // 2. Fake News Detektor (in Vorbereitung für 5.3)
-    this.registerModule({
-      slug: 'fake-news-detector',
-      title: 'Fake News Detektor',
-      description: 'Untersuche Schlagzeilen, Social-Media-Nachrichten und manipulierte Bilder auf ihren Wahrheitsgehalt.',
-      level: 'Klasse 4-6',
-      version: '0.9.0',
-      icon: <Newspaper size={24} />,
-      enabled: false,
-      component: () => null,
-    });
+    // 2. Fake News Detektor (aktiv)
+    this.registerModule(fakeNewsPlugin);
 
     // 3. Passwort & Datenschutz (in Vorbereitung)
     this.registerModule({

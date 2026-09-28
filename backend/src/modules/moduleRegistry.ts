@@ -1,6 +1,7 @@
 import { prisma } from '../models/prisma';
 import { BackendModulePlugin, ModulePublicInfoDTO } from './module.interface';
 import phishingPlugin from './phishing/index';
+import fakeNewsPlugin from './fakenews/index';
 
 export class ModuleRegistry {
   private plugins = new Map<string, BackendModulePlugin>();
@@ -9,6 +10,7 @@ export class ModuleRegistry {
   constructor() {
     // Standard-Module initial registrieren
     this.registerModule(phishingPlugin);
+    this.registerModule(fakeNewsPlugin);
   }
 
   /**
