@@ -3,7 +3,7 @@ import healthRoutes from './health.routes';
 import authRoutes from './auth.routes';
 import codeRoutes from './code.routes';
 import trackingRoutes from './tracking.routes';
-import phishingRoutes from './phishing.routes';
+import moduleRoutes from './module.routes';
 
 const apiRouter = Router();
 
@@ -11,6 +11,6 @@ apiRouter.use(healthRoutes);
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/codes', codeRoutes);
 apiRouter.use('/tracking', trackingRoutes);
-apiRouter.use('/modules/phishing', phishingRoutes);
+apiRouter.use('/modules', moduleRoutes);
 
 export default apiRouter;

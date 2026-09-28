@@ -1,14 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { phishingService } from '../services/modules/phishing/phishing.service';
+import { phishingService } from './phishing.service';
 import {
   replyPhishingRequestSchema,
   startPhishingRequestSchema,
-} from '../types/dto/phishing.dto';
+} from '../../types/dto/phishing.dto';
 
 export class PhishingController {
-  /**
-   * Startet eine neue Phishing-Simulation.
-   */
   public async start(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsed = startPhishingRequestSchema.safeParse(req.body);
@@ -21,9 +18,6 @@ export class PhishingController {
     }
   }
 
-  /**
-   * Reagiert auf eine Antwort des Kindes im Chat.
-   */
   public async reply(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsed = replyPhishingRequestSchema.safeParse(req.body);
@@ -39,9 +33,6 @@ export class PhishingController {
     }
   }
 
-  /**
-   * Schaltet zum nächsten Szenario weiter.
-   */
   public async nextScenario(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const chatId = req.body?.chatId;
@@ -57,9 +48,6 @@ export class PhishingController {
     }
   }
 
-  /**
-   * Liefert Löwe Leos Aufklärung der Warnsignale.
-   */
   public async review(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const rawId = req.params.chatId;

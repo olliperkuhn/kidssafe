@@ -1,4 +1,4 @@
-import { PhishingOptionDTO, WarningSignalReviewDTO } from '../../../types/dto/phishing.dto';
+import { PhishingOptionDTO, WarningSignalReviewDTO } from '../../types/dto/phishing.dto';
 
 export interface PhishingScenarioTemplate {
   id: string;

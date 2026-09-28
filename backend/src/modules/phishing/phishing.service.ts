@@ -5,7 +5,7 @@ import {
   PhishingReviewDTO,
   PhishingStepResponseDTO,
   ChatStatus,
-} from '../../../types/dto/phishing.dto';
+} from '../../types/dto/phishing.dto';
 import { PHISHING_SCENARIOS, PhishingScenarioTemplate } from './promptLibrary';
 
 interface ActivePhishingChat {
@@ -21,12 +21,9 @@ interface ActivePhishingChat {
   createdAt: number;
 }
 
-class PhishingService {
+export class PhishingService {
   private activeSessions = new Map<string, ActivePhishingChat>();
 
-  /**
-   * Startet eine neue Phishing-Simulation mit 3 oder 5 Szenarien.
-   */
   public startSession(scenarioCount: 3 | 5): PhishingStepResponseDTO {
     this.cleanExpiredSessions();
 
@@ -54,13 +51,9 @@ class PhishingService {
     };
 
     this.activeSessions.set(chatId, session);
-
     return this.buildStepResponse(session);
   }
 
-  /**
-   * Verarbeitet die Schüler-Auswahl und generiert die passende KI-Reaktion.
-   */
   public replyToChat(chatId: string, selectedOptionId: string): PhishingStepResponseDTO {
     const session = this.activeSessions.get(chatId);
     if (!session) {
@@ -76,7 +69,6 @@ class PhishingService {
       throw new Error('Ungültige Antwortoption ausgewählt');
     }
 
-    // 1. Schülernachricht hinzufügen
     const studentMessage: ChatMessageDTO = {
       id: randomUUID(),
       sender: 'STUDENT',
@@ -85,7 +77,6 @@ class PhishingService {
     };
     session.messages.push(studentMessage);
 
-    // 2. Logik Schritt 1
     if (session.step === 1) {
       session.chosenStep1Attitude = selectedOption.attitude;
 
@@ -101,7 +92,6 @@ class PhishingService {
         return this.buildStepResponse(session, 'Angriff erfolgreich abgewehrt! 🛡️');
       }
 
-      // Übergang zu Schritt 2 (Angreifer setzt nach)
       session.step = 2;
       const branchKey =
         selectedOption.attitude === 'VULNERABLE'
@@ -121,7 +111,6 @@ class PhishingService {
       return this.buildStepResponse(session);
     }
 
-    // 3. Logik Schritt 2
     const branchKey =
       session.chosenStep1Attitude === 'VULNERABLE'
         ? 'onVulnerable'
@@ -157,9 +146,6 @@ class PhishingService {
     return this.buildStepResponse(session, 'Reißleine gezogen und Angriff abgewehrt! 🛡️');
   }
 
-  /**
-   * Geht zum nächsten Szenario über (z. B. Fall 2 von 3).
-   */
   public nextScenario(chatId: string): PhishingStepResponseDTO {
     const session = this.activeSessions.get(chatId);
     if (!session) {
@@ -186,13 +172,9 @@ class PhishingService {
 
     session.messages = [initialAttackerMessage];
     session.currentOptions = session.template.initialOptions;
-
     return this.buildStepResponse(session);
   }
 
-  /**
-   * Liefert Löwe Leos strukturierte Aufklärung der Warnsignale für den beendeten Fall.
-   */
   public getLeoReview(chatId: string): PhishingReviewDTO {
     const session = this.activeSessions.get(chatId);
     if (!session) {

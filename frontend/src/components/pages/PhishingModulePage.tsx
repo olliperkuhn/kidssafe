@@ -7,7 +7,7 @@ import { LeoAvatar } from '../atoms/LeoAvatar';
 import { Button } from '../atoms/Button';
 import { Card } from '../atoms/Card';
 import { theme } from '../../styles/theme';
-import { ChildSessionDTO, PhishingReviewDTO, PhishingStepResponseDTO } from '../../types';
+import { PhishingReviewDTO, PhishingStepResponseDTO } from '../../types';
 import {
   startPhishingSession,
   replyToPhishing,
@@ -15,21 +15,22 @@ import {
   fetchLeoReview,
 } from '../../services/phishingApi';
 import { useStudentHeartbeat } from '../../hooks/useStudentHeartbeat';
+import { ModuleProps } from '../../modules/types';
 import { Shield, Sparkles, Rocket, Zap, ArrowLeft, AlertCircle } from 'lucide-react';
 
-export interface PhishingModulePageProps {
-  session: ChildSessionDTO;
-  onBackToDashboard: () => void;
-  onLeaveSession: () => void;
+export interface PhishingModulePageProps extends ModuleProps {
+  onBackToDashboard?: () => void;
 }
 
 type ModuleStage = 'SETUP' | 'CHAT' | 'REVIEW' | 'CERTIFICATE';
 
 export const PhishingModulePage: React.FC<PhishingModulePageProps> = ({
   session,
+  onBack,
   onBackToDashboard,
   onLeaveSession,
 }) => {
+  const handleBack = onBack || onBackToDashboard || (() => {});
   const [stage, setStage] = useState<ModuleStage>('SETUP');
   const [selectedCaseCount, setSelectedCaseCount] = useState<3 | 5>(3);
   const [isLoading, setIsLoading] = useState(false);
@@ -195,7 +196,7 @@ export const PhishingModulePage: React.FC<PhishingModulePageProps> = ({
           </Card>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: theme.spacing.md }}>
-            <Button variant="outline" size="md" onClick={onBackToDashboard}>
+            <Button variant="outline" size="md" onClick={handleBack}>
               <ArrowLeft size={18} style={{ marginRight: theme.spacing.xs }} />
               Zurück
             </Button>
@@ -214,7 +215,7 @@ export const PhishingModulePage: React.FC<PhishingModulePageProps> = ({
           isTyping={isTyping}
           onSelectOption={handleSelectOption}
           onOpenLeoReview={handleOpenLeoReview}
-          onExit={onBackToDashboard}
+          onExit={handleBack}
         />
       )}
 
@@ -232,7 +233,7 @@ export const PhishingModulePage: React.FC<PhishingModulePageProps> = ({
         <PhishingCertificateCard
           studentLabel={session.label || session.code}
           scenarioCount={selectedCaseCount}
-          onFinish={onBackToDashboard}
+          onFinish={handleBack}
         />
       )}
     </BaseLayout>

@@ -4,40 +4,31 @@ import { ModuleCard } from '../molecules/ModuleCard';
 import { theme } from '../../styles/theme';
 import { ChildSessionDTO } from '../../types';
 import { useStudentHeartbeat } from '../../hooks/useStudentHeartbeat';
-import { Fish, Newspaper, KeyRound, Sparkles, AlertCircle } from 'lucide-react';
+import { moduleRegistry } from '../../modules/registry';
+import { Sparkles, AlertCircle } from 'lucide-react';
 
 export interface StudentDashboardPageProps {
   session: ChildSessionDTO;
   onLeaveSession: () => void;
-  onOpenPhishingSimulator?: () => void;
+  onOpenModule: (slug: string) => void;
 }
 
 export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
   session,
   onLeaveSession,
-  onOpenPhishingSimulator,
+  onOpenModule,
 }) => {
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
-  const [activeModuleName, setActiveModuleName] = useState<string | undefined>(undefined);
-  const [completedScenarios, setCompletedScenarios] = useState<number>(0);
-  const [totalScenarios, setTotalScenarios] = useState<number>(0);
 
   // Sendet automatisch alle 30s ein datensparsames Lebenszeichen an die Lehrkraft
   useStudentHeartbeat(
     {
-      activeModule: activeModuleName,
-      completedScenarios,
-      totalScenarios,
+      activeModule: undefined,
+      completedScenarios: 0,
+      totalScenarios: 0,
     },
     session.sessionToken
   );
-
-  const handleStartModule = (moduleName: string) => {
-    setActiveModuleName(moduleName);
-    setTotalScenarios(5);
-    setCompletedScenarios(0);
-    setActiveMessage(`Modul "${moduleName}" wird geladen... Bereite KI-Szenarien vor (Meilenstein 5).`);
-  };
 
   const welcomeCardStyles: React.CSSProperties = {
     backgroundColor: theme.colors.surface,
@@ -102,38 +93,23 @@ export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
       </h2>
 
       <div style={gridStyles}>
-        <ModuleCard
-          title="Phishing Simulator"
-          description="Lerne gefälschte E-Mails, betrügerische Links und gefährliche Anhänge in realistischen Simulationen spielerisch zu enttarnen."
-          icon={<Fish size={24} />}
-          level="Klasse 4-6"
-          isAvailable={true}
-          onStart={() => {
-            if (onOpenPhishingSimulator) {
-              onOpenPhishingSimulator();
-            } else {
-              handleStartModule('Phishing Simulator');
-            }
-          }}
-        />
-
-        <ModuleCard
-          title="Fake News Detektor"
-          description="Untersuche Schlagzeilen, Social-Media-Nachrichten und manipulierte Bilder auf ihren Wahrheitsgehalt. Werde zum Fakten-Checker!"
-          icon={<Newspaper size={24} />}
-          level="Klasse 4-6"
-          isAvailable={true}
-          onStart={() => handleStartModule('Fake News Detektor')}
-        />
-
-        <ModuleCard
-          title="Passwort & Datenschutz"
-          description="Erfahre, wie sichere Passwörter aufgebaut sind und wie du deine privaten Daten vor neugierigen Blicken schützt."
-          icon={<KeyRound size={24} />}
-          level="Klasse 4-6"
-          isAvailable={false}
-          onStart={() => handleStartModule('Passwort & Datenschutz')}
-        />
+        {moduleRegistry.getAllModules().map((m) => (
+          <ModuleCard
+            key={m.slug}
+            title={m.title}
+            description={m.description}
+            icon={m.icon}
+            level={m.level}
+            isAvailable={m.enabled}
+            onStart={() => {
+              if (m.enabled) {
+                onOpenModule(m.slug);
+              } else {
+                setActiveMessage(`Das Modul "${m.title}" befindet sich derzeit in Vorbereitung (Meilenstein 5.3).`);
+              }
+            }}
+          />
+        ))}
       </div>
     </BaseLayout>
   );

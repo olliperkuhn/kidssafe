@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { phishingController } from '../controllers/phishing.controller';
+import { phishingController } from './phishing.controller';
 
 const router = Router();
 
