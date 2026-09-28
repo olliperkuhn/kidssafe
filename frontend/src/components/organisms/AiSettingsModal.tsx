@@ -94,11 +94,21 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
 
           <div>
             <label style={{ display: 'block', fontSize: theme.typography.fontSize.xs, fontWeight: theme.typography.fontWeight.medium, color: theme.colors.text.secondary, marginBottom: theme.spacing.xs }}>
-              Modell-Version
+              Modell-Version (Google AI Studio)
             </label>
             <select
-              value={geminiModel}
-              onChange={(e) => setGeminiModel(e.target.value)}
+              value={
+                ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(geminiModel)
+                  ? geminiModel
+                  : 'custom'
+              }
+              onChange={(e) => {
+                if (e.target.value !== 'custom') {
+                  setGeminiModel(e.target.value);
+                } else {
+                  setGeminiModel('');
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -106,12 +116,27 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
                 border: `1px solid ${theme.colors.border}`,
                 backgroundColor: theme.colors.surface,
                 fontSize: theme.typography.fontSize.sm,
+                marginBottom: !['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(geminiModel) ? theme.spacing.xs : '0',
               }}
             >
-              <option value="gemini-1.5-flash">gemini-1.5-flash (Empfohlen: schnell & didaktisch)</option>
-              <option value="gemini-2.0-flash">gemini-2.0-flash (Neueste Generation)</option>
-              <option value="gemini-1.5-pro">gemini-1.5-pro (Größeres Modell)</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash (Neueste Generation Flash – schnell & klug)</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro (Neueste Generation Pro – Flaggschiff Reasoning)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash (Sehr schnell & modern)</option>
+              <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Ultra-niedrige Latenz)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash (Bewährt & stabil)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (Großes Kontextfenster)</option>
+              <option value="custom">Anderes / Experimentelles Modell manuell eingeben...</option>
             </select>
+
+            {!['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(geminiModel) && (
+              <Input
+                label="Exakter Modell-Identifikator (aus AI Studio)"
+                placeholder="z. B. gemini-2.0-flash-thinking-exp"
+                value={geminiModel}
+                onChange={(e) => setGeminiModel(e.target.value)}
+                required
+              />
+            )}
           </div>
         </div>
 
