@@ -15,7 +15,25 @@ const envSchema = z.object({
   OLLAMA_API_URL: z.string().default('http://localhost:11434'),
   OLLAMA_MODEL: z.string().default('gemma2:2b'),
   AI_DEFAULT_PROVIDER: z.enum(['mock', 'ollama', 'gemini']).default('mock'),
-});
+}).refine(
+  (data) => {
+    if (data.NODE_ENV === 'production') {
+      return (
+        data.JWT_SECRET !== 'dev_fallback_secret_change_in_prod' &&
+        data.JWT_SECRET.length >= 32 &&
+        data.PASSWORD_PEPPER !== 'dev_fallback_pepper_change_in_prod' &&
+        data.PASSWORD_PEPPER.length >= 16 &&
+        data.COOKIE_SECRET !== 'dev_cookie_secret_change_in_prod' &&
+        data.COOKIE_SECRET.length >= 16
+      );
+    }
+    return true;
+  },
+  {
+    message:
+      'KRITISCHE SICHERHEITSWARNUNG: In der Produktionsumgebung dürfen keine Standard-Dev-Secrets verwendet werden! Bitte JWT_SECRET (min. 32 Zeichen), PASSWORD_PEPPER und COOKIE_SECRET setzen.',
+  }
+);
 
 export type EnvConfig = z.infer<typeof envSchema>;
 

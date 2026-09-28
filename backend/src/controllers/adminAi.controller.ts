@@ -1,7 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
 import { aiService } from '../services/ai/ai.service';
 import { AIProviderType } from '../config/ai.config';
+import { env } from '../config/env';
 import { z } from 'zod';
+
+function isSafeOllamaUrl(urlString?: string): boolean {
+  if (!urlString) return true;
+  try {
+    const parsed = new URL(urlString);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    const hostname = parsed.hostname.toLowerCase();
+
+    // In Produktion: Sperre Cloud-Metadata-Dienste (AWS, GCP, Azure) gegen SSRF
+    if (env.NODE_ENV === 'production') {
+      const blockedHosts = [
+        '169.254.169.254',
+        'metadata.google.internal',
+        'instance-data',
+        '100.100.100.200',
+      ];
+      if (blockedHosts.includes(hostname)) return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const updateAiConfigSchema = z.object({
   activeProvider: z.enum(['mock', 'ollama', 'gemini']).optional(),
@@ -14,7 +38,11 @@ const updateAiConfigSchema = z.object({
     .optional(),
   ollama: z
     .object({
-      baseUrl: z.string().url().optional(),
+      baseUrl: z
+        .string()
+        .url('Ungültiges URL-Format')
+        .refine(isSafeOllamaUrl, { message: 'Zugriff auf Cloud-Metadatendienste oder unzulässige Hosts verweigert.' })
+        .optional(),
       model: z.string().optional(),
     })
     .optional(),
