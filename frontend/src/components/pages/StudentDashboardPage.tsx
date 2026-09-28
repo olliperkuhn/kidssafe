@@ -9,11 +9,13 @@ import { Fish, Newspaper, KeyRound, Sparkles, AlertCircle } from 'lucide-react';
 export interface StudentDashboardPageProps {
   session: ChildSessionDTO;
   onLeaveSession: () => void;
+  onOpenPhishingSimulator?: () => void;
 }
 
 export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
   session,
   onLeaveSession,
+  onOpenPhishingSimulator,
 }) => {
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
   const [activeModuleName, setActiveModuleName] = useState<string | undefined>(undefined);
@@ -106,7 +108,13 @@ export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
           icon={<Fish size={24} />}
           level="Klasse 4-6"
           isAvailable={true}
-          onStart={() => handleStartModule('Phishing Simulator')}
+          onStart={() => {
+            if (onOpenPhishingSimulator) {
+              onOpenPhishingSimulator();
+            } else {
+              handleStartModule('Phishing Simulator');
+            }
+          }}
         />
 
         <ModuleCard

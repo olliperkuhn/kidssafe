@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HomePage } from './components/pages/HomePage';
 import { StudentDashboardPage } from './components/pages/StudentDashboardPage';
+import { PhishingModulePage } from './components/pages/PhishingModulePage';
 import { TeacherDashboardPage } from './components/pages/TeacherDashboardPage';
 import { ParentDashboardPage } from './components/pages/ParentDashboardPage';
 import { AuthModal } from './components/organisms/AuthModal';
@@ -10,6 +11,7 @@ import { LoginPayload, RegisterPayload } from './services/authApi';
 
 export const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [activeChildModule, setActiveChildModule] = useState<string | null>(null);
   const adultAuth = useAdultAuth();
   const childSession = useChildSession();
 
@@ -33,10 +35,24 @@ export const App: React.FC = () => {
 
   // 1. Kind ist eingeloggt (oder Sitzung wurde automatisch per Cookie wiederhergestellt)
   if (childSession.session) {
+    if (activeChildModule === 'phishing-simulator') {
+      return (
+        <PhishingModulePage
+          session={childSession.session}
+          onBackToDashboard={() => setActiveChildModule(null)}
+          onLeaveSession={() => {
+            setActiveChildModule(null);
+            childSession.leaveSession();
+          }}
+        />
+      );
+    }
+
     return (
       <StudentDashboardPage
         session={childSession.session}
         onLeaveSession={childSession.leaveSession}
+        onOpenPhishingSimulator={() => setActiveChildModule('phishing-simulator')}
       />
     );
   }

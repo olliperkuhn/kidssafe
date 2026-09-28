@@ -49,12 +49,15 @@
 ---
 
 ## Meilenstein 5: Basis-Strukturen und Modulentwicklung
-- [ ] **5.1 Modul-Framework (Templates & Interfaces):** Definition standardisierter TypeScript-Interfaces und UI-Templates zur nahtlosen Einbindung neuer Lernmodule.
-- [ ] **5.2 Modul 1 – Phishing-Simulator:**
-  - Interaktives Erkennen gefälschter E-Mails, Nachrichten und Webseiten.
-  - Feedback-Mechanismen und didaktische Aufbereitung.
+- [x] **5.1 Modul-Framework (Templates & Interfaces):** Standardisierte DTO-Interfaces, AI-Service-Abstraktion (mit lokaler LLM-Vorbereitung und resilienter Offline-Engine) und modulare UI-Komponenten (Messenger-Chat, Option-Selector, Review, Diplom).
+- [x] **5.2 Modul 1 – Phishing-Simulator:**
+  - Interaktives Chat-Rollenspiel: KI-Angreifer sendet Phishing-Nachrichten aus der Lebenswelt (Roblox/Gaming, Schulportal, Fake-Freund, Spieletester, Paket-SMS).
+  - 4 kindgerechte Antwortoptionen je Schritt (naiv, zögerlich, skeptisch, abwehrend) mit dynamischen Eskalations- oder Abwehrpfaden.
+  - Aufklärer-Rolle "Löwe Leo" (Avatar): Detaillierte Analyse aller Warnsignale (Zeitdruck, Datenfalle, falsche Links) und goldene Schutzregeln.
+  - Flexible Fallauswahl (3 vs. 5 Szenarien) und feierliches Cyber-Detektiv-Diplom.
+  - Vollständige Verzahnung mit dem Lehrer-Live-Tracking (Meilenstein 4).
 - [ ] **5.3 Modul 2 – Fake News Generator & Detektor:**
-  - Spielerische Analyse von Schlagzeilen, Bildmanipulationen und Quellenprüfung.
+  - Spielerische Analyse von Schlagzeilen, Bildmanipulationen und Quellenprüfung (separater Spielbereich).
 
 ---
 

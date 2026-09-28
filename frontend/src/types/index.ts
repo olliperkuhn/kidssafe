@@ -88,4 +88,54 @@ export interface HeartbeatPayload {
   totalScenarios?: number;
 }
 
-export type ViewState = 'HOME' | 'STUDENT_DASHBOARD' | 'TEACHER_DASHBOARD' | 'PARENT_DASHBOARD';
+export type ViewState = 'HOME' | 'STUDENT_DASHBOARD' | 'TEACHER_DASHBOARD' | 'PARENT_DASHBOARD' | 'PHISHING_SIMULATOR';
+
+// --- Phishing Simulator Types ---
+export type StudentAttitude = 'VULNERABLE' | 'HESITANT' | 'CAUTIOUS' | 'DEFENSIVE';
+export type ChatSender = 'ATTACKER' | 'STUDENT' | 'LEO';
+export type ChatStatus = 'IN_PROGRESS' | 'ESCALATED' | 'DEFENDED';
+
+export interface PhishingOptionDTO {
+  id: string;
+  text: string;
+  attitude: StudentAttitude;
+  feedbackNote?: string;
+}
+
+export interface ChatMessageDTO {
+  id: string;
+  sender: ChatSender;
+  text: string;
+  timestamp: string;
+  isWarningSignal?: boolean;
+  warningTitle?: string;
+  warningExplanation?: string;
+}
+
+export interface PhishingStepResponseDTO {
+  chatId: string;
+  scenarioIndex: number;
+  totalScenarios: number;
+  scenarioTitle: string;
+  scenarioContext: string;
+  status: ChatStatus;
+  messages: ChatMessageDTO[];
+  options?: PhishingOptionDTO[];
+  statusMessage?: string;
+}
+
+export interface WarningSignalReviewDTO {
+  quote: string;
+  type: string;
+  explanation: string;
+  protectionTip: string;
+}
+
+export interface PhishingReviewDTO {
+  chatId: string;
+  scenarioTitle: string;
+  outcome: ChatStatus;
+  signals: WarningSignalReviewDTO[];
+  goldenRule: string;
+  leoSummary: string;
+}
