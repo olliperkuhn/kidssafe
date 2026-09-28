@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import apiRouter from './routes';
 import { errorHandler } from './middleware/errorHandler';
@@ -10,6 +11,7 @@ const app = express();
 
 // Middlewares
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+app.use(cookieParser(env.COOKIE_SECRET));
 app.use(express.json());
 
 // API Routes

@@ -60,6 +60,7 @@ model InviteCode {
   code        String      @unique // e.g. "SAFE-4A-89"
   type        CodeType    @default(STUDENT_CLASS)
   status      CodeStatus  @default(ACTIVE)
+  avatarId    String?     // Für spätere Avatar-Auswahl (pseudonymisiert)
   
   // Optional associations (pseudonymized)
   classroomId String?
@@ -71,7 +72,22 @@ model InviteCode {
   createdAt   DateTime    @default(now())
   expiresAt   DateTime?
 
+  sessions    ChildSession[]
+
   @@map("invite_codes")
+}
+
+model ChildSession {
+  id           String      @id @default(uuid())
+  codeId       String
+  code         InviteCode  @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  sessionToken String      @unique
+  expiresAt    DateTime
+  lastActiveAt DateTime    @default(now())
+  createdAt    DateTime    @default(now())
+  progress     Json?       // Speichert Szenarien-/Modulfortschritt pseudonymisiert
+
+  @@map("child_sessions")
 }
 
 model LearningModule {

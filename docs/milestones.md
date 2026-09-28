@@ -14,14 +14,15 @@
 ---
 
 ## Meilenstein 2: Backend-Architektur und Identitätsmanagement
-- [ ] **2.1 Datenmodelle & Schemata:** Entwurf der relationalen Datenstrukturen für Nutzer, Einladungscodes, Klassen und Lernmodule.
-- [ ] **2.2 Rollenbasierte Zugriffskontrolle (RBAC):** Strikte Trennung von Rollen:
+- [x] **2.1 Datenmodelle & Schemata:** Relationale PostgreSQL-Schemata für Nutzer, Einladungscodes, Klassen und persistierte Kindersitzungen (`ChildSession`).
+- [x] **2.2 Rollenbasierte Zugriffskontrolle (RBAC):** Strikte Trennung von Rollen:
   - **Eltern:** Standard-User (privater Kontext).
-  - **Lehrkräfte:** Schul-User mit erweiterten Verwaltungsrechten.
-- [ ] **2.3 Authentifizierung Erwachsene:** Sicheres Auth-System für Erwachsene (E-Mail, Nutzername, Erstellungsdatum, Passwort-Hashing mit Salt & Pepper).
-- [ ] **2.4 Zugangslogik für Kinder (Security by Design):**
-  - Anmeldung **ausschließlich** über zugewiesene Einladungscodes (von Eltern/Lehrer) oder temporäre Codes für Gastzugänge.
-  - Vollständige Pseudonymisierung (keine Klarnamen).
+  - **Lehrkräfte:** Schul-User mit Rechten zur Klassen- und Code-Verwaltung.
+- [x] **2.3 Authentifizierung Erwachsene:** Sicheres Auth-System für Erwachsene (E-Mail, Nutzername, Passwort-Hashing mit Salt & Pepper via scrypt + timingSafeEqual, 24h JWT).
+- [x] **2.4 Zugangslogik für Kinder (Security by Design):**
+  - Anmeldung **ausschließlich** über pseudonymisierte Einladungscodes oder 8h-Gastzugänge.
+  - Vollständige Pseudonymisierung (keine Speicherung von Klarnamen oder PII).
+  - Persistierte 8h-Sitzungen mit HTTP-Only-Cookie zur nahtlosen Rückkehr auf dem iPad.
   - Vorbereitung für spätere Avatar-Auswahl.
 
 ---

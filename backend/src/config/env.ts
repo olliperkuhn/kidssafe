@@ -10,6 +10,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().default('postgresql://kidssafe:kidssafe_secret@localhost:5432/kidssafe_db?schema=public'),
   JWT_SECRET: z.string().default('dev_fallback_secret_change_in_prod'),
   PASSWORD_PEPPER: z.string().default('dev_fallback_pepper_change_in_prod'),
+  COOKIE_SECRET: z.string().default('dev_cookie_secret_change_in_prod'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
