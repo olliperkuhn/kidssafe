@@ -4,18 +4,20 @@ import { Button } from '../atoms/Button';
 import { Badge } from '../atoms/Badge';
 import { theme } from '../../styles/theme';
 import { ClassroomDTO } from '../../types';
-import { Users, PlusCircle, Printer } from 'lucide-react';
+import { Users, PlusCircle, Printer, Activity } from 'lucide-react';
 
 export interface ClassroomCardProps {
   classroom: ClassroomDTO;
   onGenerateCodes: (classroom: ClassroomDTO) => void;
   onPrintCodes: (classroom: ClassroomDTO) => void;
+  onOpenLiveMonitor?: (classroom: ClassroomDTO) => void;
 }
 
 export const ClassroomCard: React.FC<ClassroomCardProps> = ({
   classroom,
   onGenerateCodes,
   onPrintCodes,
+  onOpenLiveMonitor,
 }) => {
   const headerStyles: React.CSSProperties = {
     display: 'flex',
@@ -37,6 +39,7 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
     display: 'flex',
     gap: theme.spacing.sm,
     marginTop: theme.spacing.md,
+    flexWrap: 'wrap',
   };
 
   return (
@@ -61,10 +64,18 @@ export const ClassroomCard: React.FC<ClassroomCardProps> = ({
           Codes generieren
         </Button>
         {classroom.codeCount > 0 && (
-          <Button size="sm" variant="outline" onClick={() => onPrintCodes(classroom)}>
-            <Printer size={16} style={{ marginRight: theme.spacing.xs }} />
-            Druckansicht
-          </Button>
+          <>
+            <Button size="sm" variant="outline" onClick={() => onPrintCodes(classroom)}>
+              <Printer size={16} style={{ marginRight: theme.spacing.xs }} />
+              Druckansicht
+            </Button>
+            {onOpenLiveMonitor && (
+              <Button size="sm" variant="secondary" onClick={() => onOpenLiveMonitor(classroom)}>
+                <Activity size={16} style={{ marginRight: theme.spacing.xs }} />
+                Live-Monitor
+              </Button>
+            )}
+          </>
         )}
       </div>
     </Card>

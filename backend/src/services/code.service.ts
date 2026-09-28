@@ -63,6 +63,7 @@ export class CodeService {
       sessionDto: {
         sessionToken: token,
         code: inviteCode.code,
+        label: inviteCode.label ?? undefined,
         type: inviteCode.type,
         classroomId: inviteCode.classroomId ?? undefined,
         avatarId: inviteCode.avatarId ?? undefined,
@@ -90,6 +91,7 @@ export class CodeService {
       sessionDto: {
         sessionToken: token,
         code: session.code.code,
+        label: session.code.label ?? undefined,
         type: session.code.type,
         classroomId: session.code.classroomId ?? undefined,
         avatarId: session.code.avatarId ?? undefined,
@@ -150,12 +152,26 @@ export class CodeService {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 Tage gültig
     const createdCodes: InviteCodeDTO[] = [];
 
+    const animalNames = [
+      'Fuchs', 'Eule', 'Biber', 'Delfin', 'Löwe', 'Pinguin', 'Koala', 'Igel', 'Otter', 'Panda',
+      'Tiger', 'Adler', 'Wolf', 'Falke', 'Seehund', 'Giraffe', 'Zebra', 'Känguru', 'Gepard', 'Eichhörnchen',
+      'Bär', 'Luchs', 'Waschbär', 'Erdmännchen', 'Wal', 'Schildkröte', 'Kolibri', 'Flamingo', 'Chamäleon', 'Fledermaus'
+    ];
+
     for (let i = 0; i < dto.count; i++) {
       const codeStr = `${prefix}-${this.generateRandomCodePart(3)}-${this.generateRandomCodePart(2)}`;
       
+      let label = `iPad ${String(i + 1).padStart(2, '0')}`;
+      if (dto.labelScheme === 'ANIMALS') {
+        label = animalNames[i % animalNames.length] ?? `Tier ${i + 1}`;
+      } else if (dto.labelScheme === 'NUMBER') {
+        label = `#${String(i + 1).padStart(2, '0')}`;
+      }
+
       const created = await prisma.inviteCode.create({
         data: {
           code: codeStr,
+          label,
           type: CodeType.STUDENT_CLASS,
           status: CodeStatus.ACTIVE,
           classroomId: classroom.id,
@@ -167,6 +183,7 @@ export class CodeService {
       createdCodes.push({
         id: created.id,
         code: created.code,
+        label: created.label ?? undefined,
         type: created.type,
         status: created.status,
         classroomId: created.classroomId ?? undefined,

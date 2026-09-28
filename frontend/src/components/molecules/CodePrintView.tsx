@@ -81,6 +81,22 @@ export const CodePrintView: React.FC<CodePrintViewProps> = ({ classroom, codes, 
 
             <div style={codeStyles}>{item.code}</div>
 
+            {item.label && (
+              <div
+                style={{
+                  fontSize: theme.typography.fontSize.xs,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.secondary.hover,
+                  backgroundColor: theme.colors.secondary.light,
+                  padding: `2px ${theme.spacing.sm}`,
+                  borderRadius: theme.borderRadius.full,
+                  marginTop: theme.spacing.xs,
+                }}
+              >
+                Gerät: {item.label}
+              </div>
+            )}
+
             <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.muted, marginTop: theme.spacing.xs }}>
               Auf dem iPad eingeben & Mission starten
             </div>

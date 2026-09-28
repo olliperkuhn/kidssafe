@@ -15,6 +15,8 @@ export type UserRole = 'PARENT' | 'TEACHER' | 'ADMIN';
 export type CodeType = 'STUDENT_CLASS' | 'CHILD_FAMILY' | 'GUEST';
 export type CodeStatus = 'ACTIVE' | 'INACTIVE' | 'EXPIRED';
 
+export type LabelScheme = 'IPAD' | 'ANIMALS' | 'NUMBER';
+
 export interface UserDTO {
   id: string;
   email: string;
@@ -31,6 +33,7 @@ export interface AuthResponseDTO {
 export interface ChildSessionDTO {
   sessionToken: string;
   code: string;
+  label?: string;
   type: CodeType;
   classroomId?: string;
   avatarId?: string;
@@ -40,6 +43,7 @@ export interface ChildSessionDTO {
 export interface InviteCodeDTO {
   id: string;
   code: string;
+  label?: string;
   type: CodeType;
   status: CodeStatus;
   classroomId?: string;
@@ -53,6 +57,35 @@ export interface ClassroomDTO {
   teacherId: string;
   codeCount: number;
   createdAt: string;
+}
+
+export type StudentActivityStatus = 'ONLINE' | 'OFFLINE' | 'COMPLETED';
+
+export interface StudentTrackingItemDTO {
+  codeId: string;
+  code: string;
+  label: string;
+  status: StudentActivityStatus;
+  lastActiveSecondsAgo: number;
+  activeModule?: string;
+  completedScenarios: number;
+  totalScenarios: number;
+  progressPercent: number;
+}
+
+export interface ClassroomTrackingResponseDTO {
+  classroomId: string;
+  classroomName: string;
+  totalCodes: number;
+  activeCodes: number;
+  completedCodes: number;
+  students: StudentTrackingItemDTO[];
+}
+
+export interface HeartbeatPayload {
+  activeModule?: string;
+  completedScenarios?: number;
+  totalScenarios?: number;
 }
 
 export type ViewState = 'HOME' | 'STUDENT_DASHBOARD' | 'TEACHER_DASHBOARD' | 'PARENT_DASHBOARD';

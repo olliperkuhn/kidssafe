@@ -2,13 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BaseLayout } from '../templates/BaseLayout';
 import { ClassroomCard } from '../molecules/ClassroomCard';
 import { CodePrintView } from '../molecules/CodePrintView';
+import { LiveSessionMonitor } from '../organisms/LiveSessionMonitor';
 import { CodeGeneratorModal } from '../organisms/CodeGeneratorModal';
 import { Modal } from '../atoms/Modal';
 import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';
 import { theme } from '../../styles/theme';
-import { ClassroomDTO, InviteCodeDTO, UserDTO } from '../../types';
+import { ClassroomDTO, InviteCodeDTO, LabelScheme, UserDTO } from '../../types';
 import { listTeacherClassrooms, createClassroom, generateClassroomCodes } from '../../services/codeApi';
+import { useClassroomTracking } from '../../hooks/useClassroomTracking';
 import { Plus, School, AlertCircle } from 'lucide-react';
 
 export interface TeacherDashboardPageProps {
@@ -31,7 +33,17 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
   const [newClassName, setNewClassName] = useState('');
   const [generatorClass, setGeneratorClass] = useState<ClassroomDTO | null>(null);
   const [printClass, setPrintClass] = useState<ClassroomDTO | null>(null);
+  const [activeTrackingClass, setActiveTrackingClass] = useState<ClassroomDTO | null>(null);
   const [currentCodes, setCurrentCodes] = useState<InviteCodeDTO[]>([]);
+
+  const {
+    liveData,
+    isLoading: isTrackingLoading,
+    error: trackingError,
+    refresh: refreshTracking,
+    isPolling,
+    togglePolling,
+  } = useClassroomTracking(token, activeTrackingClass?.id ?? null);
 
   const loadClassrooms = useCallback(async () => {
     try {
@@ -62,9 +74,14 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
     }
   };
 
-  const handleGenerateCodes = async (classroomId: string, count: number, prefix?: string) => {
+  const handleGenerateCodes = async (
+    classroomId: string,
+    count: number,
+    prefix?: string,
+    labelScheme?: LabelScheme
+  ) => {
     try {
-      const generated = await generateClassroomCodes(token, classroomId, count, prefix);
+      const generated = await generateClassroomCodes(token, classroomId, count, prefix, labelScheme);
       const targetClass = classrooms.find((c) => c.id === classroomId) || null;
       setCurrentCodes(generated);
       setPrintClass(targetClass);
@@ -73,6 +90,35 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
       setError(err instanceof Error ? err.message : 'Codes konnten nicht generiert werden');
     }
   };
+
+  if (activeTrackingClass) {
+    return (
+      <BaseLayout adultUser={user} onLogoutAdult={onLogout}>
+        {isTrackingLoading && !liveData ? (
+          <div style={{ textAlign: 'center', padding: theme.spacing.xxl, color: theme.colors.text.muted }}>
+            Verbinde mit Live-Sitzung von {activeTrackingClass.name}...
+          </div>
+        ) : trackingError ? (
+          <div style={{ padding: theme.spacing.lg }}>
+            <div style={{ backgroundColor: theme.colors.danger.light, color: theme.colors.danger.default, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, marginBottom: theme.spacing.lg }}>
+              {trackingError}
+            </div>
+            <Button variant="outline" onClick={() => setActiveTrackingClass(null)}>
+              Zurück zur Übersicht
+            </Button>
+          </div>
+        ) : liveData ? (
+          <LiveSessionMonitor
+            data={liveData}
+            isPolling={isPolling}
+            onTogglePolling={togglePolling}
+            onRefresh={refreshTracking}
+            onBack={() => setActiveTrackingClass(null)}
+          />
+        ) : null}
+      </BaseLayout>
+    );
+  }
 
   if (printClass) {
     return (
@@ -136,6 +182,7 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
               onPrintCodes={(target) => {
                 setPrintClass(target);
               }}
+              onOpenLiveMonitor={(target) => setActiveTrackingClass(target)}
             />
           ))}
         </div>

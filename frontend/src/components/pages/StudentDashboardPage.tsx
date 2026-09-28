@@ -3,6 +3,7 @@ import { BaseLayout } from '../templates/BaseLayout';
 import { ModuleCard } from '../molecules/ModuleCard';
 import { theme } from '../../styles/theme';
 import { ChildSessionDTO } from '../../types';
+import { useStudentHeartbeat } from '../../hooks/useStudentHeartbeat';
 import { Fish, Newspaper, KeyRound, Sparkles, AlertCircle } from 'lucide-react';
 
 export interface StudentDashboardPageProps {
@@ -15,8 +16,24 @@ export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
   onLeaveSession,
 }) => {
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
+  const [activeModuleName, setActiveModuleName] = useState<string | undefined>(undefined);
+  const [completedScenarios, setCompletedScenarios] = useState<number>(0);
+  const [totalScenarios, setTotalScenarios] = useState<number>(0);
+
+  // Sendet automatisch alle 30s ein datensparsames Lebenszeichen an die Lehrkraft
+  useStudentHeartbeat(
+    {
+      activeModule: activeModuleName,
+      completedScenarios,
+      totalScenarios,
+    },
+    session.sessionToken
+  );
 
   const handleStartModule = (moduleName: string) => {
+    setActiveModuleName(moduleName);
+    setTotalScenarios(5);
+    setCompletedScenarios(0);
     setActiveMessage(`Modul "${moduleName}" wird geladen... Bereite KI-Szenarien vor (Meilenstein 5).`);
   };
 
@@ -57,6 +74,11 @@ export const StudentDashboardPage: React.FC<StudentDashboardPageProps> = ({
         </div>
 
         <div style={{ backgroundColor: theme.colors.primary.light, padding: `${theme.spacing.sm} ${theme.spacing.md}`, borderRadius: theme.borderRadius.md, textAlign: 'right' }}>
+          {session.label && (
+            <div style={{ fontSize: theme.typography.fontSize.xs, fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.primary.hover, marginBottom: '2px' }}>
+              Gerät: {session.label}
+            </div>
+          )}
           <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.muted }}>
             Aktiver Zugangscode:
           </div>

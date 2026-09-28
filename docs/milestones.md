@@ -38,11 +38,12 @@
 ---
 
 ## Meilenstein 4: Lehrer-Backend und Code-Verwaltung
-- [ ] **4.1 Pseudonymisierte Klassenlisten:** Administrativer Bereich zur Anlage von Klassen und Gruppen ohne personenbezogene Daten.
-- [ ] **4.2 Code-Generator:** Generierung konfigurierbarer Kontingente an Einladungscodes für Schüler:innen (z. B. 25 Codes für einen iPad-Klassensatz).
-- [ ] **4.3 Live Session-Tracking:**
-  - Echtzeit-Status: Anzeige, ob ein Code im Modul aktiv ist oder passiv bleibt.
-  - Schrittweiser Fortschritt (Szenarien abgehakt).
+- [x] **4.1 Pseudonymisierte Klassenlisten:** Administrativer Bereich zur Anlage von Klassen und Gruppen ohne personenbezogene Daten.
+- [x] **4.2 Code-Generator:** Generierung konfigurierbarer Kontingente an Einladungscodes für Schüler:innen (z. B. 25 Codes für einen iPad-Klassensatz) mit flexiblen Pseudonym-Schemata (`iPad 01`, Tiernamen wie `Fuchs`/`Eule` oder Ziffern) und optimierter Kärtchen-Druckansicht.
+- [x] **4.3 Live Session-Tracking:**
+  - Echtzeit-Status: Anzeige, ob ein Code im Modul aktiv (`ONLINE`), inaktiv (`OFFLINE`) oder fertig (`COMPLETED`) ist.
+  - Schrittweiser Fortschritt (Szenarien abgehakt, Prozentbalken).
+  - Intervall-Polling (6 Sekunden) mit Pause/Play und manueller Aktualisierung.
   - **Datenschutz:** Ausschließlich Tracking von Aktivität & Fortschritt – keine inhaltliche Bewertung oder Speicherung der Schülerantworten.
 
 ---

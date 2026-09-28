@@ -58,6 +58,7 @@ model Classroom {
 model InviteCode {
   id          String      @id @default(uuid())
   code        String      @unique // e.g. "SAFE-4A-89"
+  label       String?     // Kindgerechtes Pseudonym (z. B. "iPad 01", "Fuchs")
   type        CodeType    @default(STUDENT_CLASS)
   status      CodeStatus  @default(ACTIVE)
   avatarId    String?     // Für spätere Avatar-Auswahl (pseudonymisiert)
@@ -78,14 +79,17 @@ model InviteCode {
 }
 
 model ChildSession {
-  id           String      @id @default(uuid())
-  codeId       String
-  code         InviteCode  @relation(fields: [codeId], references: [id], onDelete: Cascade)
-  sessionToken String      @unique
-  expiresAt    DateTime
-  lastActiveAt DateTime    @default(now())
-  createdAt    DateTime    @default(now())
-  progress     Json?       // Speichert Szenarien-/Modulfortschritt pseudonymisiert
+  id                 String      @id @default(uuid())
+  codeId             String
+  code               InviteCode  @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  sessionToken       String      @unique
+  expiresAt          DateTime
+  lastActiveAt       DateTime    @default(now())
+  createdAt          DateTime    @default(now())
+  activeModule       String?     // z. B. "phishing-simulator"
+  completedScenarios Int         @default(0)
+  totalScenarios     Int         @default(0)
+  progress           Json?       // Zusätzliche pseudonyme Sessiondaten
 
   @@map("child_sessions")
 }

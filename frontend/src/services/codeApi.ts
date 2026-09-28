@@ -1,4 +1,4 @@
-import { ChildSessionDTO, ClassroomDTO, InviteCodeDTO } from '../types';
+import { ChildSessionDTO, ClassroomDTO, InviteCodeDTO, LabelScheme } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
@@ -100,13 +100,14 @@ export async function listTeacherClassrooms(token: string): Promise<ClassroomDTO
 }
 
 /**
- * Generiert neue Codes für eine Klasse.
+ * Generiert neue Codes für eine Klasse mit optionalem Pseudonym-Label-Schema.
  */
 export async function generateClassroomCodes(
   token: string,
   classroomId: string,
   count: number,
-  prefix?: string
+  prefix?: string,
+  labelScheme?: LabelScheme
 ): Promise<InviteCodeDTO[]> {
   const response = await fetch(`${API_BASE_URL}/codes/generate`, {
     method: 'POST',
@@ -114,7 +115,7 @@ export async function generateClassroomCodes(
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ classroomId, count, prefix }),
+    body: JSON.stringify({ classroomId, count, prefix, labelScheme }),
   });
 
   const data = await response.json();
