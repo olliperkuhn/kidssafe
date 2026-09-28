@@ -7,6 +7,7 @@ import {
   ChatStatus,
 } from '../../types/dto/phishing.dto';
 import { PHISHING_SCENARIOS, PhishingScenarioTemplate } from './promptLibrary';
+import { aiService } from '../../services/ai/ai.service';
 
 interface ActivePhishingChat {
   chatId: string;
@@ -175,10 +176,27 @@ export class PhishingService {
     return this.buildStepResponse(session);
   }
 
-  public getLeoReview(chatId: string): PhishingReviewDTO {
+  public async getLeoReview(chatId: string): Promise<PhishingReviewDTO> {
     const session = this.activeSessions.get(chatId);
     if (!session) {
       throw new Error('Sitzung nicht gefunden');
+    }
+
+    if (aiService.getActiveProviderId() !== 'mock') {
+      try {
+        const history = session.messages.map((m) => ({ sender: m.sender, text: m.text }));
+        const aiRes = await aiService.generateLeoReview(
+          session.template.title,
+          session.status,
+          history,
+          chatId
+        );
+        if (aiRes?.review) {
+          return aiRes.review;
+        }
+      } catch {
+        // Fallback to template library
+      }
     }
 
     return {

@@ -57,7 +57,7 @@ export class PhishingController {
         return;
       }
 
-      const review = phishingService.getLeoReview(chatId);
+      const review = await phishingService.getLeoReview(chatId);
       res.status(200).json(review);
     } catch (err) {
       next(err);

@@ -11,6 +11,10 @@ const envSchema = z.object({
   JWT_SECRET: z.string().default('dev_fallback_secret_change_in_prod'),
   PASSWORD_PEPPER: z.string().default('dev_fallback_pepper_change_in_prod'),
   COOKIE_SECRET: z.string().default('dev_cookie_secret_change_in_prod'),
+  GEMINI_API_KEY: z.string().optional(),
+  OLLAMA_API_URL: z.string().default('http://localhost:11434'),
+  OLLAMA_MODEL: z.string().default('gemma2:2b'),
+  AI_DEFAULT_PROVIDER: z.enum(['mock', 'ollama', 'gemini']).default('mock'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
