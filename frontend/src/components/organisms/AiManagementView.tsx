@@ -34,7 +34,7 @@ export const AiManagementView: React.FC<AiManagementViewProps> = ({ token }) => 
     if (!status) return undefined;
     if (providerId === 'gemini') return status.models.gemini.model;
     if (providerId === 'ollama') return `${status.models.ollama.model} (${status.models.ollama.baseUrl})`;
-    if (providerId === 'mock') return '5 kuratierte Szenarien (727 Zeilen)';
+    if (providerId === 'mock') return '10 kuratierte Szenarien (Zufalls-Mix)';
     return undefined;
   };
 
