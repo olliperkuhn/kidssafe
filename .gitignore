@@ -11,6 +11,8 @@ build/
 .env
 .env.local
 .env.*.local
+*ai-runtime.json
+.runtime-ai.json
 
 # Logs
 npm-debug.log*

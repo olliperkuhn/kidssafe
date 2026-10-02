@@ -36,13 +36,13 @@ export class GeminiProvider implements AIProvider {
     timeoutMs: number = defaultAIConfig.timeoutMs
   ) {
     this.apiKey = apiKey;
-    this.model = model;
+    this.model = model.replace(/^models\//, '').trim();
     this.timeoutMs = timeoutMs;
   }
 
   public updateConfig(apiKey?: string, model?: string, timeoutMs?: number): void {
     if (apiKey !== undefined) this.apiKey = apiKey;
-    if (model) this.model = model;
+    if (model) this.model = model.replace(/^models\//, '').trim();
     if (timeoutMs !== undefined) this.timeoutMs = timeoutMs;
   }
 
@@ -52,10 +52,11 @@ export class GeminiProvider implements AIProvider {
 
   public async checkHealth(): Promise<ProviderHealthStatus> {
     const isConfigured = Boolean(this.apiKey && this.apiKey.trim().length > 0);
+    const cleanModel = this.model.replace(/^models\//, '').trim();
     if (!isConfigured) {
       return {
         id: this.id,
-        name: `${this.name} (${this.model})`,
+        name: `${this.name} (${cleanModel})`,
         isConfigured: false,
         isAvailable: false,
         error: 'Kein GEMINI_API_KEY konfiguriert (Offline-Klassenzimmer-Modus)',
@@ -64,10 +65,10 @@ export class GeminiProvider implements AIProvider {
 
     const start = Date.now();
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}?key=${this.apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}?key=${this.apiKey}`;
       const res = await fetch(url, {
         method: 'GET',
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(7000),
       });
       const latencyMs = Date.now() - start;
 
@@ -107,7 +108,8 @@ export class GeminiProvider implements AIProvider {
     }
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
+      const cleanModel = this.model.replace(/^models\//, '').trim();
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${this.apiKey}`;
       const payload = {
         system_instruction: {
           parts: [{ text: options.systemPrompt }],

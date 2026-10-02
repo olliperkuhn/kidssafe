@@ -6,6 +6,7 @@ import {
 } from '../../types/dto/phishing.dto';
 
 export interface AttackerTurnDTO {
+  scenarioTitle?: string;
   attackerMessage: string;
   escalationReached: boolean;
   options: PhishingOptionDTO[];
@@ -30,6 +31,7 @@ Sicherheits- und Didaktikregeln:
 3. Du MUSST zwingend ein valides JSON-Objekt ohne zusätzlichen Text zurückgeben!
 Format:
 {
+  "scenarioTitle": "Kurzer, packender Titel für dieses Phishing-Szenario",
   "attackerMessage": "Deine nächste Nachricht an das Kind",
   "escalationReached": false,
   "options": [
@@ -140,7 +142,17 @@ Analysiere genau diesen Chatverlauf und erstelle jetzt die detektivische Nachbes
         return { id, text, attitude };
       });
 
+      const scenarioTitle =
+        typeof parsed.scenarioTitle === 'string' && parsed.scenarioTitle.trim().length > 0
+          ? parsed.scenarioTitle.trim()
+          : typeof parsed.scenario_title === 'string' && parsed.scenario_title.trim().length > 0
+          ? parsed.scenario_title.trim()
+          : typeof parsed.title === 'string' && parsed.title.trim().length > 0
+          ? parsed.title.trim()
+          : undefined;
+
       return {
+        scenarioTitle,
         attackerMessage,
         escalationReached: Boolean(parsed.escalationReached || parsed.escalation_reached),
         options,

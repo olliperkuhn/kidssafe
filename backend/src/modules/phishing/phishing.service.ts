@@ -14,6 +14,7 @@ interface ActivePhishingChat {
   chatId: string;
   scenarioIndex: number;
   totalScenarios: number;
+  scenarioTitle?: string;
   template: PhishingScenarioTemplate;
   step: 1 | 2;
   chosenStep1Attitude?: 'VULNERABLE' | 'HESITANT' | 'CAUTIOUS' | 'DEFENSIVE';
@@ -46,6 +47,7 @@ export class PhishingService {
       chatId,
       scenarioIndex,
       totalScenarios: scenarioCount,
+      scenarioTitle: firstTurn.scenarioTitle || template.title,
       template,
       step: 1,
       status: 'IN_PROGRESS',
@@ -181,6 +183,7 @@ export class PhishingService {
 
     const firstTurn = await this.initFirstTurn(session.template);
     session.providerUsed = firstTurn.providerUsed;
+    session.scenarioTitle = firstTurn.scenarioTitle || session.template.title;
 
     const initialAttackerMessage: ChatMessageDTO = {
       id: randomUUID(),
@@ -204,7 +207,7 @@ export class PhishingService {
       try {
         const history = session.messages.map((m) => ({ sender: m.sender, text: m.text }));
         const aiRes = await aiService.generateLeoReview(
-          session.template.title,
+          session.scenarioTitle || session.template.title,
           session.status,
           history,
           chatId
@@ -222,7 +225,7 @@ export class PhishingService {
 
     return {
       chatId,
-      scenarioTitle: session.template.title,
+      scenarioTitle: session.scenarioTitle || session.template.title,
       outcome: session.status,
       signals: session.template.warningSignals,
       goldenRule: session.template.goldenRule,
@@ -235,10 +238,12 @@ export class PhishingService {
     message: string;
     options: PhishingOptionDTO[];
     providerUsed: string;
+    scenarioTitle?: string;
   }> {
     let message = template.initialMessage;
     let options = template.initialOptions;
     let providerUsed: string = aiService.getActiveProviderId();
+    let scenarioTitle: string | undefined = undefined;
 
     if (aiService.getActiveProviderId() !== 'mock') {
       try {
@@ -247,12 +252,14 @@ export class PhishingService {
           message = aiTurn.turn.attackerMessage;
           options = aiTurn.turn.options;
           providerUsed = aiTurn.providerUsed;
+          scenarioTitle = aiTurn.turn.scenarioTitle;
         }
-      } catch {
+      } catch (err) {
+        logger.warn(`[PhishingService] Turn-1 KI-Generierung fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
         providerUsed = 'mock';
       }
     }
-    return { message, options, providerUsed };
+    return { message, options, providerUsed, scenarioTitle };
   }
 
   private resolveBranchKey(attitude?: string): 'onVulnerable' | 'onHesitant' | 'onCautious' {
@@ -260,11 +267,7 @@ export class PhishingService {
   }
 
   private getTemplate(index: number): PhishingScenarioTemplate {
-    const template = PHISHING_SCENARIOS[index % PHISHING_SCENARIOS.length];
-    if (!template) {
-      throw new Error(`Szenario für Index ${index} nicht gefunden`);
-    }
-    return template;
+    return PHISHING_SCENARIOS[index % PHISHING_SCENARIOS.length] ?? PHISHING_SCENARIOS[0]!;
   }
 
   private buildStepResponse(session: ActivePhishingChat, statusMessage?: string): PhishingStepResponseDTO {
@@ -272,7 +275,7 @@ export class PhishingService {
       chatId: session.chatId,
       scenarioIndex: session.scenarioIndex,
       totalScenarios: session.totalScenarios,
-      scenarioTitle: session.template.title,
+      scenarioTitle: session.scenarioTitle || session.template.title,
       scenarioContext: session.template.context,
       status: session.status,
       messages: session.messages,

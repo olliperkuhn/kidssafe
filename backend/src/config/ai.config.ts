@@ -33,7 +33,7 @@ export interface AIConfig {
  * zur Laufzeit über das Teacher/Admin-Backend überschrieben werden.
  */
 export const defaultAIConfig: AIConfig = {
-  activeProvider: (env.AI_DEFAULT_PROVIDER as AIProviderType) || 'mock',
+  activeProvider: (env.AI_DEFAULT_PROVIDER as AIProviderType) || (env.GEMINI_API_KEY ? 'gemini' : 'mock'),
   fallbackOrder: ['gemini', 'ollama', 'mock'],
   temperature: 0.7,
   timeoutMs: 25000,

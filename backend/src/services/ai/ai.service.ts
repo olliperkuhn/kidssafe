@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { AIProvider, LLMGenerateOptions, ProviderHealthStatus } from './providers/aiProvider.interface';
 import { geminiProvider, GeminiProvider } from './providers/geminiProvider';
 import { ollamaProvider, OllamaProvider } from './providers/ollamaProvider';
@@ -24,6 +26,8 @@ export interface UpdateAIConfigInput {
   guardrails?: Partial<GuardrailConfig>;
 }
 
+const RUNTIME_CONFIG_PATH = path.join(process.cwd(), 'ai-runtime.json');
+
 export class AIService {
   private config: AIConfig;
   private providers: Map<AIProviderType, AIProvider> = new Map();
@@ -33,6 +37,7 @@ export class AIService {
     this.providers.set('gemini', geminiProvider);
     this.providers.set('ollama', ollamaProvider);
     this.providers.set('mock', mockProvider);
+    this.loadPersistedConfig();
   }
 
   public getActiveProviderId(): AIProviderType {
@@ -42,6 +47,7 @@ export class AIService {
   public setActiveProviderId(provider: AIProviderType): void {
     if (this.providers.has(provider)) {
       this.config.activeProvider = provider;
+      this.persistConfig();
     }
   }
 
@@ -49,7 +55,7 @@ export class AIService {
     return { ...this.config };
   }
 
-  public updateRuntimeConfig(updates: UpdateAIConfigInput): void {
+  public updateRuntimeConfig(updates: UpdateAIConfigInput, persist = true): void {
     if (updates.activeProvider) this.config.activeProvider = updates.activeProvider;
     if (updates.fallbackOrder) this.config.fallbackOrder = updates.fallbackOrder;
     if (updates.temperature !== undefined) this.config.temperature = updates.temperature;
@@ -78,6 +84,44 @@ export class AIService {
     }
     if (updates.guardrails) {
       this.config.guardrails = { ...this.config.guardrails, ...updates.guardrails };
+    }
+    if (persist) {
+      this.persistConfig();
+    }
+  }
+
+  private loadPersistedConfig(): void {
+    try {
+      if (fs.existsSync(RUNTIME_CONFIG_PATH)) {
+        const raw = fs.readFileSync(RUNTIME_CONFIG_PATH, 'utf-8');
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object') {
+          this.updateRuntimeConfig(data, false);
+        }
+      }
+    } catch (err) {
+      logger.warn('[AIService] Fehler beim Laden der Konfiguration:', err);
+    }
+  }
+
+  private persistConfig(): void {
+    try {
+      const data = {
+        activeProvider: this.config.activeProvider,
+        temperature: this.config.temperature,
+        timeoutMs: this.config.timeoutMs,
+        gemini: {
+          apiKey: this.config.gemini.apiKey,
+          model: this.config.gemini.model,
+        },
+        ollama: {
+          baseUrl: this.config.ollama.baseUrl,
+          model: this.config.ollama.model,
+        },
+      };
+      fs.writeFileSync(RUNTIME_CONFIG_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (err) {
+      logger.warn('[AIService] Fehler beim Speichern der Konfiguration:', err);
     }
   }
 

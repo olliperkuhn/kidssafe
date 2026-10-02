@@ -22,15 +22,19 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
   onSave,
 }) => {
   const [geminiApiKey, setGeminiApiKey] = useState('');
-  const [geminiModel, setGeminiModel] = useState('gemini-1.5-flash');
+  const [geminiModel, setGeminiModel] = useState('gemini-2.0-flash');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [activateGemini, setActivateGemini] = useState(true);
   const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434');
   const [ollamaModel, setOllamaModel] = useState('gemma2:2b');
   const [temperature, setTemperature] = useState(0.7);
 
+  const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+
   useEffect(() => {
     if (status) {
-      setGeminiModel(status.models.gemini.model || 'gemini-1.5-flash');
+      setGeminiModel(status.models.gemini.model || 'gemini-2.0-flash');
+      setActivateGemini(status.activeProvider === 'gemini' || !!status.models.gemini.apiKeyConfigured);
       setOllamaUrl(status.models.ollama.baseUrl || 'http://localhost:11434');
       setOllamaModel(status.models.ollama.model || 'gemma2:2b');
       setTemperature(status.temperature ?? 0.7);
@@ -49,6 +53,7 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
         baseUrl: ollamaUrl.trim(),
         model: ollamaModel.trim(),
       },
+      ...(activateGemini ? { activeProvider: 'gemini' as const } : {}),
     };
 
     const success = await onSave(payload);
@@ -97,11 +102,7 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
               Modell-Version (Google AI Studio)
             </label>
             <select
-              value={
-                ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(geminiModel)
-                  ? geminiModel
-                  : 'custom'
-              }
+              value={GEMINI_MODELS.includes(geminiModel) ? geminiModel : 'custom'}
               onChange={(e) => {
                 if (e.target.value !== 'custom') {
                   setGeminiModel(e.target.value);
@@ -116,19 +117,17 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
                 border: `1px solid ${theme.colors.border}`,
                 backgroundColor: theme.colors.surface,
                 fontSize: theme.typography.fontSize.sm,
-                marginBottom: !['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(geminiModel) ? theme.spacing.xs : '0',
+                marginBottom: !GEMINI_MODELS.includes(geminiModel) ? theme.spacing.xs : '0',
               }}
             >
-              <option value="gemini-2.5-flash">gemini-2.5-flash (Neueste Generation Flash – schnell & klug)</option>
-              <option value="gemini-2.5-pro">gemini-2.5-pro (Neueste Generation Pro – Flaggschiff Reasoning)</option>
-              <option value="gemini-2.0-flash">gemini-2.0-flash (Sehr schnell & modern)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash (Neueste Generation Flash – schnell & klug)</option>
               <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Ultra-niedrige Latenz)</option>
               <option value="gemini-1.5-flash">gemini-1.5-flash (Bewährt & stabil)</option>
-              <option value="gemini-1.5-pro">gemini-1.5-pro (Großes Kontextfenster)</option>
-              <option value="custom">Anderes / Experimentelles Modell manuell eingeben...</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (Flaggschiff Reasoning)</option>
+              <option value="custom">Anderes Modell manuell eingeben...</option>
             </select>
 
-            {!['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(geminiModel) && (
+            {!GEMINI_MODELS.includes(geminiModel) && (
               <Input
                 label="Exakter Modell-Identifikator (aus AI Studio)"
                 placeholder="z. B. gemini-2.0-flash-thinking-exp"
@@ -137,6 +136,19 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({
                 required
               />
             )}
+          </div>
+
+          <div style={{ marginTop: theme.spacing.sm, display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+            <input
+              type="checkbox"
+              id="activateGeminiCheckbox"
+              checked={activateGemini}
+              onChange={(e) => setActivateGemini(e.target.checked)}
+              style={{ cursor: 'pointer' }}
+            />
+            <label htmlFor="activateGeminiCheckbox" style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.primary, cursor: 'pointer' }}>
+              Google Gemini sofort als aktiven KI-Provider für alle Schülermodule aktivieren
+            </label>
           </div>
         </div>
 
