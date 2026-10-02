@@ -29,6 +29,7 @@ Sicherheits- und Didaktikregeln:
 1. Keine Gewalt, Drohungen oder Schimpfwörter. Nur kindgerechte Sprache und Emojis.
 2. Niemals echte Links oder echte Telefonnummern verwenden (nur Fake-Domains wie .biz oder .glitch.net).
 3. Du MUSST zwingend ein valides JSON-Objekt ohne zusätzlichen Text zurückgeben!
+4. TEXTMENGE FÜR 4. KLASSE: Extrem wichtig! Halte Texte kurz! "attackerMessage" maximal 1 bis 2 kurze, einfache Sätze. Die 4 "options" jeweils maximal 1 prägnanter Satz (unter 10 Wörtern)!
 Format:
 {
   "scenarioTitle": "Kurzer, packender Titel für dieses Phishing-Szenario",
@@ -73,6 +74,7 @@ WICHTIG FÜR DIE ANALYSE:
 1. Untersuche GENAU die tatsächlichen Nachrichten des Angreifers im untenstehenden Chatverlauf!
 2. Zitiere im Feld "quote" echte Sätze aus den Angreifernachrichten dieses Chats als enttarnte Warnsignale.
 3. Beziehe dich in deiner Zusammenfassung ("leoSummary") direkt auf den Spielverlauf.
+4. TEXTMENGE FÜR 4. KLASSE: Halte Texte einfach und kurz! "leoSummary" maximal 2 kurze Sätze. "explanation" und "protectionTip" jeweils maximal 1 einfacher Satz.
 
 Antworte zwingend als valides JSON-Objekt im folgenden Format:
 {

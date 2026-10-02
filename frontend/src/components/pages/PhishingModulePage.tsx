@@ -66,15 +66,31 @@ export const PhishingModulePage: React.FC<PhishingModulePageProps> = ({
 
   const handleSelectOption = async (optionId: string) => {
     if (!stepData) return;
+    const chosenOption = stepData.options?.find((o) => o.id === optionId);
+    if (chosenOption) {
+      setStepData({
+        ...stepData,
+        messages: [
+          ...stepData.messages,
+          {
+            id: `temp-${Date.now()}`,
+            sender: 'STUDENT',
+            text: chosenOption.text,
+            timestamp: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+          },
+        ],
+        options: [],
+      });
+    }
+
     try {
       setIsTyping(true);
       setError(null);
       const nextData = await replyToPhishing(stepData.chatId, optionId);
-      // Kurze Verzögerung für realistischen Chat-Effekt
       setTimeout(() => {
         setStepData(nextData);
         setIsTyping(false);
-      }, 500);
+      }, 350);
     } catch (err) {
       setIsTyping(false);
       setError(err instanceof Error ? err.message : 'Antwort fehlgeschlagen');

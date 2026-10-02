@@ -21,15 +21,15 @@ export const LeoDetectiveReview: React.FC<LeoDetectiveReviewProps> = ({
   const isDefended = review.outcome === 'DEFENDED';
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+    <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
       {/* Leo Begrüßungskarte */}
       <Card padding="md">
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, flexWrap: 'wrap' }}>
           <LeoAvatar mood={isDefended ? 'friendly' : 'detective'} size="lg" />
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: theme.spacing.xs }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, color: isDefended ? theme.colors.success.default : theme.colors.warning.default, fontWeight: theme.typography.fontWeight.bold, fontSize: theme.typography.fontSize.xs }}>
-                <Search size={16} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, color: isDefended ? theme.colors.success.default : theme.colors.warning.default, fontWeight: theme.typography.fontWeight.bold, fontSize: '0.85rem' }}>
+                <Search size={18} />
                 <span>{isDefended ? 'FALL ABGEWEHRT: DETEKTIV-ANALYSE MIT LÖWE LEO' : 'DETEKTIV-ANALYSE MIT LÖWE LEO'}</span>
               </div>
               {review.providerUsed && review.providerUsed !== 'mock' ? (
@@ -38,10 +38,10 @@ export const LeoDetectiveReview: React.FC<LeoDetectiveReviewProps> = ({
                 <Badge variant="neutral">📚 Offline-Bibliothek</Badge>
               )}
             </div>
-            <h2 style={{ fontSize: theme.typography.fontSize.xl, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary, margin: '2px 0' }}>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary, margin: '4px 0' }}>
               {review.scenarioTitle}
             </h2>
-            <p style={{ fontSize: theme.typography.fontSize.sm, color: theme.colors.text.secondary }}>
+            <p style={{ fontSize: '1rem', lineHeight: 1.5, color: theme.colors.text.secondary }}>
               {review.leoSummary}
             </p>
           </div>
@@ -50,8 +50,8 @@ export const LeoDetectiveReview: React.FC<LeoDetectiveReviewProps> = ({
 
       {/* Warnsignale im Detail */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
-        <h3 style={{ fontSize: theme.typography.fontSize.md, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary, display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
-          <Lightbulb size={18} color={theme.colors.warning.default} />
+        <h3 style={{ fontSize: '1.1rem', fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary, display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+          <Lightbulb size={20} color={theme.colors.warning.default} />
           <span>Die enttarnten Warnsignale in diesem Chat:</span>
         </h3>
 
@@ -65,30 +65,31 @@ export const LeoDetectiveReview: React.FC<LeoDetectiveReviewProps> = ({
               borderRadius: theme.borderRadius.md,
               padding: theme.spacing.md,
               boxShadow: theme.shadows.sm,
+              animation: 'messageSlideIn 0.3s ease-out',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: theme.spacing.xs, marginBottom: theme.spacing.xs }}>
-              <span style={{ fontSize: theme.typography.fontSize.xs, fontWeight: theme.typography.fontWeight.bold, color: '#B45309', backgroundColor: theme.colors.warning.light, padding: '2px 8px', borderRadius: theme.borderRadius.full }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: theme.typography.fontWeight.bold, color: '#B45309', backgroundColor: theme.colors.warning.light, padding: '3px 10px', borderRadius: theme.borderRadius.full }}>
                 Falle {idx + 1}: {signal.type}
               </span>
-              <span style={{ fontSize: theme.typography.fontSize.xs, fontStyle: 'italic', color: theme.colors.text.muted, backgroundColor: theme.colors.neutral[100], padding: '2px 8px', borderRadius: theme.borderRadius.sm }}>
+              <span style={{ fontSize: '0.85rem', fontStyle: 'italic', color: theme.colors.text.muted, backgroundColor: theme.colors.neutral[100], padding: '3px 10px', borderRadius: theme.borderRadius.sm }}>
                 "{signal.quote}"
               </span>
             </div>
 
-            <p style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.primary, margin: `${theme.spacing.xs} 0` }}>
+            <p style={{ fontSize: '1rem', lineHeight: 1.5, color: theme.colors.text.primary, margin: `${theme.spacing.xs} 0` }}>
               {signal.explanation}
             </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, fontSize: theme.typography.fontSize.xs, fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.primary.hover, marginTop: theme.spacing.xs }}>
-              <CheckCircle size={14} color={theme.colors.primary.default} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs, fontSize: '0.95rem', fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.primary.hover, marginTop: theme.spacing.xs }}>
+              <CheckCircle size={16} color={theme.colors.primary.default} />
               <span>Agenten-Tipp: {signal.protectionTip}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Goldene Regel */}
+      {/* Goldene Regel (Kindgerecht vergrößert) */}
       <div
         style={{
           backgroundColor: theme.colors.primary.light,
@@ -96,12 +97,13 @@ export const LeoDetectiveReview: React.FC<LeoDetectiveReviewProps> = ({
           borderRadius: theme.borderRadius.lg,
           padding: theme.spacing.md,
           textAlign: 'center',
+          animation: 'popIn 0.35s ease-out',
         }}
       >
-        <div style={{ fontSize: theme.typography.fontSize.xs, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.primary.hover, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ fontSize: '0.85rem', fontWeight: theme.typography.fontWeight.bold, color: theme.colors.primary.hover, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           ⭐ Goldene Schutz-Regel zum Merken ⭐
         </div>
-        <div style={{ fontSize: theme.typography.fontSize.md, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.primary.default, marginTop: theme.spacing.xs }}>
+        <div style={{ fontSize: '1.15rem', fontWeight: theme.typography.fontWeight.bold, color: theme.colors.primary.default, marginTop: theme.spacing.xs, lineHeight: 1.4 }}>
           {review.goldenRule}
         </div>
       </div>

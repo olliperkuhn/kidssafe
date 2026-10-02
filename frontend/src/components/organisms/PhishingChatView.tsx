@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import { theme } from '../../styles/theme';
 import { PhishingStepResponseDTO } from '../../types';
 import { ChatBubble } from '../molecules/ChatBubble';
+import { TypingIndicator } from '../molecules/TypingIndicator';
+import { LeoCoachBanner } from '../molecules/LeoCoachBanner';
 import { PhishingOptionSelector } from '../molecules/PhishingOptionSelector';
 import { Button } from '../atoms/Button';
 import { Badge } from '../atoms/Badge';
@@ -29,11 +31,12 @@ export const PhishingChatView: React.FC<PhishingChatViewProps> = ({
   }, [data.messages, isTyping]);
 
   const isFinished = data.status === 'ESCALATED' || data.status === 'DEFENDED';
+  const currentStep = data.messages.filter((m) => m.sender === 'STUDENT').length + 1;
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Kopfzeile mit Navigation und Fall-Info */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.sm, flexWrap: 'wrap', gap: theme.spacing.xs }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.xs, flexWrap: 'wrap', gap: theme.spacing.xs }}>
         <Button variant="outline" size="sm" onClick={onExit}>
           <ArrowLeft size={16} style={{ marginRight: theme.spacing.xs }} />
           Missions-Zentrale
@@ -48,31 +51,38 @@ export const PhishingChatView: React.FC<PhishingChatViewProps> = ({
           ) : (
             <Badge variant="neutral">📚 Offline-Modus</Badge>
           )}
-          <span style={{ fontSize: theme.typography.fontSize.sm, fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary }}>
+          <span style={{ fontSize: '0.95rem', fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary }}>
             {data.scenarioTitle}
           </span>
         </div>
       </div>
 
-      {/* Situations-Kontextbox */}
+      {/* Situations-Kontextbox (Kindgerecht vergrößert) */}
       <div
         style={{
           backgroundColor: theme.colors.primary.light,
           padding: `${theme.spacing.xs} ${theme.spacing.md}`,
           borderRadius: theme.borderRadius.md,
-          fontSize: theme.typography.fontSize.xs,
+          fontSize: '0.85rem',
           color: theme.colors.primary.hover,
-          marginBottom: theme.spacing.sm,
+          marginBottom: theme.spacing.xs,
           display: 'flex',
           alignItems: 'center',
           gap: theme.spacing.xs,
         }}
       >
-        <Gamepad2 size={16} />
+        <Gamepad2 size={18} />
         <span>{data.scenarioContext}</span>
       </div>
 
-      {/* Chat-Fenster (Messenger-Optik) */}
+      {/* Löwe Leo als aktiver Begleiter & Coach */}
+      <LeoCoachBanner
+        status={data.status}
+        isTyping={isTyping}
+        step={currentStep}
+      />
+
+      {/* Chat-Fenster (Messenger-Optik mit vergrößerten Texten) */}
       <div
         style={{
           backgroundColor: theme.colors.surface,
@@ -91,22 +101,8 @@ export const PhishingChatView: React.FC<PhishingChatViewProps> = ({
           <ChatBubble key={msg.id} message={msg} attackerName={data.scenarioTitle} />
         ))}
 
-        {isTyping && (
-          <div
-            style={{
-              alignSelf: 'flex-start',
-              padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-              backgroundColor: theme.colors.neutral[100],
-              borderRadius: theme.borderRadius.full,
-              fontSize: '0.75rem',
-              color: theme.colors.text.muted,
-              fontStyle: 'italic',
-              marginTop: theme.spacing.xs,
-            }}
-          >
-            Nachricht wird empfangen...
-          </div>
-        )}
+        {/* Animierter Tipp-Indikator während Lade-/KI-Zeiten */}
+        {isTyping && <TypingIndicator senderName={data.scenarioTitle} />}
 
         <div ref={chatBottomRef} />
       </div>
@@ -125,19 +121,26 @@ export const PhishingChatView: React.FC<PhishingChatViewProps> = ({
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: theme.spacing.md,
+            animation: 'popIn 0.3s ease-out',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
             {data.status === 'ESCALATED' ? (
-              <AlertTriangle size={24} color={theme.colors.danger.default} />
+              <AlertTriangle size={32} color={theme.colors.danger.default} />
             ) : (
-              <ShieldCheck size={24} color={theme.colors.success.default} />
+              <ShieldCheck size={32} color={theme.colors.success.default} />
             )}
             <div>
-              <div style={{ fontWeight: theme.typography.fontWeight.bold, fontSize: theme.typography.fontSize.sm, color: data.status === 'ESCALATED' ? theme.colors.danger.default : theme.colors.success.default }}>
+              <div
+                style={{
+                  fontWeight: theme.typography.fontWeight.bold,
+                  fontSize: '1.05rem',
+                  color: data.status === 'ESCALATED' ? theme.colors.danger.default : theme.colors.success.default,
+                }}
+              >
                 {data.status === 'ESCALATED' ? '🚨 Phishing-Falle zugeschnappt!' : '🛡️ Super: Phishing abgewehrt!'}
               </div>
-              <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.9rem', color: theme.colors.text.secondary, marginTop: '2px' }}>
                 {data.status === 'ESCALATED'
                   ? 'Der Chat wurde gestoppt. Untersuche jetzt mit Löwe Leo, woran man den Betrug erkennt.'
                   : 'Du hast richtig reagiert! Lass uns den Chat mit Löwe Leo genau analysieren.'}
@@ -145,8 +148,8 @@ export const PhishingChatView: React.FC<PhishingChatViewProps> = ({
             </div>
           </div>
 
-          <Button variant="primary" size="md" onClick={onOpenLeoReview}>
-            <Search size={16} style={{ marginRight: theme.spacing.xs }} />
+          <Button variant="primary" size="lg" onClick={onOpenLeoReview}>
+            <Search size={18} style={{ marginRight: theme.spacing.xs }} />
             Mit Löwe Leo untersuchen
           </Button>
         </div>

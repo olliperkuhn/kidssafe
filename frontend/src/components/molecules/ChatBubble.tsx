@@ -25,15 +25,32 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, attackerName = 
           padding: theme.spacing.md,
           margin: `${theme.spacing.sm} 0`,
           boxShadow: theme.shadows.sm,
+          animation: 'messageSlideIn 0.25s ease-out',
         }}
       >
         <LeoAvatar mood="detective" size="sm" />
         <div>
-          <div style={{ fontSize: theme.typography.fontSize.xs, fontWeight: theme.typography.fontWeight.bold, color: '#B45309', display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+          <div
+            style={{
+              fontSize: theme.typography.fontSize.xs,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: '#B45309',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing.xs,
+            }}
+          >
             <Sparkles size={14} />
             Löwe Leo (Cyber-Detektiv):
           </div>
-          <div style={{ fontSize: theme.typography.fontSize.sm, color: theme.colors.text.primary, marginTop: '2px' }}>
+          <div
+            style={{
+              fontSize: '1rem',
+              lineHeight: theme.typography.lineHeight.normal,
+              color: theme.colors.text.primary,
+              marginTop: '4px',
+            }}
+          >
             {message.text}
           </div>
         </div>
@@ -47,11 +64,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, attackerName = 
     alignItems: isStudent ? 'flex-end' : 'flex-start',
     margin: `${theme.spacing.xs} 0`,
     maxWidth: '100%',
+    animation: 'messageSlideIn 0.25s ease-out',
   };
 
   const bubbleStyles: React.CSSProperties = {
-    maxWidth: '82%',
-    padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+    maxWidth: '85%',
+    padding: `12px 18px`,
     borderRadius: isStudent
       ? `${theme.borderRadius.lg} ${theme.borderRadius.lg} 2px ${theme.borderRadius.lg}`
       : `${theme.borderRadius.lg} ${theme.borderRadius.lg} ${theme.borderRadius.lg} 2px`,
@@ -69,15 +87,15 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, attackerName = 
       ? `2px solid ${theme.colors.danger.default}`
       : `1px solid ${isStudent ? 'transparent' : theme.colors.border}`,
     boxShadow: theme.shadows.sm,
-    fontSize: theme.typography.fontSize.sm,
-    lineHeight: theme.typography.lineHeight.relaxed,
+    fontSize: '1.05rem', // Deutlich größer und kinderfreundlicher für 4. Klässler (vorher 14px)
+    lineHeight: 1.55,
     wordBreak: 'break-word',
   };
 
   const metaStyles: React.CSSProperties = {
-    fontSize: '0.7rem',
+    fontSize: '0.8rem',
     color: theme.colors.text.muted,
-    marginTop: '2px',
+    marginTop: '3px',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
@@ -86,16 +104,35 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, attackerName = 
   return (
     <div style={containerStyles}>
       {!isStudent && (
-        <div style={{ fontSize: '0.75rem', fontWeight: theme.typography.fontWeight.semibold, color: theme.colors.text.secondary, marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <User size={13} color={theme.colors.secondary.default} />
+        <div
+          style={{
+            fontSize: '0.85rem',
+            fontWeight: theme.typography.fontWeight.semibold,
+            color: theme.colors.text.secondary,
+            marginBottom: '3px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}
+        >
+          <User size={14} color={theme.colors.secondary.default} />
           {attackerName}
         </div>
       )}
 
       <div style={bubbleStyles}>
         {message.isWarningSignal && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: theme.typography.fontWeight.bold, fontSize: '0.75rem', marginBottom: '4px' }}>
-            <ShieldAlert size={14} />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: theme.typography.fontWeight.bold,
+              fontSize: '0.85rem',
+              marginBottom: '6px',
+            }}
+          >
+            <ShieldAlert size={16} />
             {message.warningTitle || 'Warnung:'}
           </div>
         )}
